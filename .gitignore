@@ -1,0 +1,24 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Platform folders are generated fresh by CI via `flutter create --platforms=android .`
+# so the Gradle/AGP/Kotlin versions always match the Flutter SDK version used to build.
+/android/
+/ios/
+
+# Firebase config (added later via Configure Everything, never committed)
+google-services.json
+GoogleService-Info.plist
+
+.DS_Store
+*.log
