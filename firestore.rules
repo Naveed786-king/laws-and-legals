@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public (the Android app) can read everything, never write.
+    // Only signed-in admin users (added manually in Firebase Console >
+    // Authentication) can write, via the Admin Panel.
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
