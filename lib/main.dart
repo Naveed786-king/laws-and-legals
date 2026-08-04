@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/splash/presentation/splash_screen.dart';
@@ -8,10 +9,12 @@ import 'features/splash/presentation/splash_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  // Firebase.initializeApp() is intentionally NOT called here yet - it
-  // activates automatically once Settings > Firebase Config is completed
-  // via Configure Everything, per the "no live connection until configured"
-  // project rule.
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {
+    // Firebase not reachable (e.g. no network on first launch) - the app
+    // still works fully offline via Hive-cached/demo content.
+  }
   runApp(const ProviderScope(child: LawsAndLegalsApp()));
 }
 

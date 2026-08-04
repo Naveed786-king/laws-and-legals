@@ -19,9 +19,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Firebase Hosting
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: basic-buttress-470212-g2
           channelId: live
+
+      - name: Reminder if secret missing
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' }}
+        run: echo "::warning::FIREBASE_SERVICE_ACCOUNT secret not set yet - Admin Panel was not deployed. Add the secret to enable auto-deploy."

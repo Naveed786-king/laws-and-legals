@@ -16,9 +16,11 @@ build/
 /android/
 /ios/
 
-# Firebase config (added later via Configure Everything, never committed)
-google-services.json
-GoogleService-Info.plist
+# Firebase Android config lives in /firebase-config/google-services.json and
+# IS committed (private repo; this value isn't a secret by Firebase's design -
+# it's protected by Firestore/Storage security rules, not by hiding this file).
+# The web admin panel's config is similarly non-secret and lives in
+# admin-panel/js/firebase-config.js, also committed.
 
 .DS_Store
 *.log

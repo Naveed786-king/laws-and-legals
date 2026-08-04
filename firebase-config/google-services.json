@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "89679651855",
+    "project_id": "basic-buttress-470212-g2",
+    "storage_bucket": "basic-buttress-470212-g2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89679651855:android:569ff797b307120d8b2f7a",
+        "android_client_info": {
+          "package_name": "com.lawandlegal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCzN1UC3Hj0MX-tTcXz9jy8MPa9P_O6E4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

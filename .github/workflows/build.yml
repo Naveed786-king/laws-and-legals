@@ -29,9 +29,29 @@ jobs:
 
       - name: Generate Android platform folder
         run: |
-          flutter create --platforms=android --org com.lawsandlegals --project-name laws_and_legals .
+          flutter create --platforms=android --org com.lawandlegal --project-name laws_and_legals .
           # Give the app a human-friendly label instead of the raw project name.
           sed -i 's/android:label="laws_and_legals"/android:label="Laws And Legals"/' android/app/src/main/AndroidManifest.xml
+          # This Firebase project's Android app is registered under package
+          # name "com.lawandlegal" exactly (no extra suffix), matching the
+          # committed google-services.json. `flutter create --org` appends the
+          # project name as a suffix, so we override applicationId/namespace
+          # directly to match exactly.
+          sed -i 's/applicationId = "com.lawandlegal.laws_and_legals"/applicationId = "com.lawandlegal"/' android/app/build.gradle.kts
+          sed -i 's/namespace = "com.lawandlegal.laws_and_legals"/namespace = "com.lawandlegal"/' android/app/build.gradle.kts
+
+      - name: Wire in Firebase (google-services plugin + config)
+        run: |
+          cp firebase-config/google-services.json android/app/google-services.json
+          # Root-level plugin declaration
+          sed -i '/id("org.jetbrains.kotlin.android") version .* apply false/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
+          # App-level: apply the plugin
+          sed -i '/id("org.jetbrains.kotlin.android")/a\    id("com.google.gms.google-services")' android/app/build.gradle.kts
+          # App-level: add Firebase BoM + Analytics + Messaging (Core is enough
+          # to satisfy the plugin; Messaging matches the Flutter firebase_messaging package)
+          sed -i '/dependencies {/a\    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))\n    implementation("com.google.firebase:firebase-analytics")\n    implementation("com.google.firebase:firebase-messaging")' android/app/build.gradle.kts
+          echo "--- settings.gradle.kts ---"; cat android/settings.gradle.kts
+          echo "--- app/build.gradle.kts ---"; cat android/app/build.gradle.kts
 
       - name: Install dependencies
         run: flutter pub get
