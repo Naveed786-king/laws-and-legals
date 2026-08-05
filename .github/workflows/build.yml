@@ -34,20 +34,7 @@ jobs:
           {
             flutter create --platforms=android --org com.lawandlegal --project-name laws_and_legals .
 
-            sed -i 's/android:label="laws_and_legals"/android:label="Laws And Legals"/' android/app/src/main/AndroidManifest.xml
-
-            sed -i 's/applicationId = "com.lawandlegal.laws_and_legals"/applicationId = "com.lawandlegal"/' android/app/build.gradle.kts
-            sed -i 's/namespace = "com.lawandlegal.laws_and_legals"/namespace = "com.lawandlegal"/' android/app/build.gradle.kts
-
-            cp firebase-config/google-services.json android/app/google-services.json
-
-            sed -i '/id("org.jetbrains.kotlin.android") version .* apply false/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
-            sed -i '/id("org.jetbrains.kotlin.android")/a\    id("com.google.gms.google-services")' android/app/build.gradle.kts
-            sed -i '/dependencies {/a\    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))\n    implementation("com.google.firebase:firebase-analytics")\n    implementation("com.google.firebase:firebase-messaging")' android/app/build.gradle.kts
-
-            echo "--- settings.gradle.kts ---"; cat android/settings.gradle.kts
-            echo "--- app/build.gradle.kts ---"; cat android/app/build.gradle.kts
-            echo "--- AndroidManifest.xml ---"; cat android/app/src/main/AndroidManifest.xml
+            python3 scripts/patch_android.py
 
             flutter pub get
             flutter analyze --no-fatal-infos --no-fatal-warnings || true
