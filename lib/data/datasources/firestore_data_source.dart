@@ -35,12 +35,17 @@ class FirestoreDataSource {
 
   Future<List<Post>> getPublishedPosts() async {
     try {
+      // Single-field orderBy only (no compound where+orderBy) so this never
+      // needs a Firestore composite index to be created manually - filter
+      // by status client-side instead.
       final snap = await _db
           .collection('posts')
-          .where('status', isEqualTo: 'published')
           .orderBy('publishedAt', descending: true)
           .get();
-      return snap.docs.map(_postFromDoc).toList();
+      return snap.docs
+          .where((doc) => (doc.data()['status'] as String?) == 'published')
+          .map(_postFromDoc)
+          .toList();
     } catch (_) {
       return [];
     }
@@ -69,13 +74,13 @@ class FirestoreDataSource {
 
   Future<List<BannerAd>> getBanners(String position) async {
     try {
+      // Single-field where only, filter isEnabled and sort by priority
+      // client-side to avoid needing a composite index.
       final snap = await _db
           .collection('banners')
           .where('position', isEqualTo: position)
-          .where('isEnabled', isEqualTo: true)
-          .orderBy('priority')
           .get();
-      return snap.docs.map((d) {
+      final banners = snap.docs.map((d) {
         final data = d.data();
         return BannerAd(
           id: d.id,
@@ -87,6 +92,9 @@ class FirestoreDataSource {
           isVisible: data['isVisible'] ?? true,
         );
       }).toList();
+      final filtered = banners.where((b) => b.isEnabled).toList()
+        ..sort((a, b) => a.priority.compareTo(b.priority));
+      return filtered;
     } catch (_) {
       return [];
     }

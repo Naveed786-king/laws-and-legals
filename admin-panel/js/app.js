@@ -3,20 +3,15 @@ import {
 } from "./firebase-init.js";
 import { toast } from "./ui.js";
 
-import * as PostsPage from "./pages/posts.js";
-import * as BannersPage from "./pages/banners.js";
-import * as PagesPage from "./pages/pages-cms.js";
-import * as SectionsPage from "./pages/sections.js";
-import * as ThemePage from "./pages/theme.js";
-import * as SplashPage from "./pages/splash.js";
-
-const routes = {
-  posts: PostsPage,
-  banners: BannersPage,
-  pages: PagesPage,
-  sections: SectionsPage,
-  theme: ThemePage,
-  splash: SplashPage,
+// Lazy-loaded per route instead of all six up front - cuts initial load
+// time since only the page you're actually viewing gets fetched/parsed.
+const routeLoaders = {
+  posts: () => import("./pages/posts.js"),
+  banners: () => import("./pages/banners.js"),
+  pages: () => import("./pages/pages-cms.js"),
+  sections: () => import("./pages/sections.js"),
+  theme: () => import("./pages/theme.js"),
+  splash: () => import("./pages/splash.js"),
 };
 
 const loginScreen = document.getElementById("login-screen");
@@ -56,16 +51,31 @@ onAuthStateChanged(auth, (user) => {
 // ---------- Hash router ----------
 function currentRouteName() {
   const hash = window.location.hash.replace(/^#\//, "");
-  return routes[hash] ? hash : "posts";
+  return routeLoaders[hash] ? hash : "posts";
 }
 
-function handleRoute() {
+async function handleRoute() {
   const routeName = currentRouteName();
   document.querySelectorAll("#nav-links a").forEach((a) => {
     a.classList.toggle("active", a.dataset.route === routeName);
   });
-  outlet.innerHTML = "Loading...";
-  routes[routeName].render(outlet, toast);
+  outlet.innerHTML = '<p style="color:#5C6066;">Loading...</p>';
+  try {
+    const page = await routeLoaders[routeName]();
+    await page.render(outlet, toast);
+  } catch (err) {
+    console.error(err);
+    outlet.innerHTML = `
+      <div class="card">
+        <h3 style="color:#B3261E;">Couldn't load this page</h3>
+        <p>${(err && err.message) ? err.message : "Unknown error"}</p>
+        <p style="color:#5C6066;font-size:13px;">
+          If this says "permission-denied", the Firestore security rules
+          haven't been deployed yet, or you're not signed in as an admin user.
+        </p>
+        <button class="btn-secondary" onclick="location.reload()">Retry</button>
+      </div>`;
+  }
 }
 
 window.addEventListener("hashchange", handleRoute);

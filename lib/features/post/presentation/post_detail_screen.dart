@@ -138,20 +138,87 @@ class _PostBannerSlot extends ConsumerWidget {
   }
 }
 
-/// Minimal, dependency-free renderer for the simple HTML we control
-/// (demo content today, WordPress post content later - both are just
-/// paragraphs). Avoids pulling in a full HTML/webview engine for MVP.
+/// Minimal, dependency-free renderer for the block-based HTML the Admin
+/// Panel's content editor produces: <h2> headings, <p> paragraphs,
+/// <ul><li> lists, and <img src="..."> images. Avoids pulling in a full
+/// HTML/webview engine for what is still a small, controlled set of tags.
 class _HtmlLite extends StatelessWidget {
   const _HtmlLite({required this.html});
   final String html;
 
   @override
   Widget build(BuildContext context) {
-    final text = html
-        .replaceAll(RegExp(r'<p>'), '')
-        .replaceAll(RegExp(r'</p>'), '\n\n')
-        .replaceAll(RegExp(r'<[^>]+>'), '')
-        .trim();
-    return Text(text, style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6));
+    final theme = Theme.of(context);
+    final blocks = <Widget>[];
+    final blockPattern = RegExp(r'<(h2|p|ul|img)[^>]*(?:/>|>(.*?)</\1>|\s*/?>)', dotAll: true);
+
+    for (final match in blockPattern.allMatches(html)) {
+      final tag = match.group(1);
+      final inner = match.group(2) ?? '';
+      switch (tag) {
+        case 'h2':
+          blocks.add(Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 6),
+            child: Text(_stripTags(inner), style: theme.textTheme.titleLarge),
+          ));
+          break;
+        case 'p':
+          final text = _stripTags(inner).trim();
+          if (text.isNotEmpty) {
+            blocks.add(Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(text, style: theme.textTheme.bodyLarge?.copyWith(height: 1.6)),
+            ));
+          }
+          break;
+        case 'ul':
+          final items = RegExp(r'<li>(.*?)</li>', dotAll: true).allMatches(inner);
+          blocks.add(Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: items.map((li) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('•  '),
+                      Expanded(
+                        child: Text(_stripTags(li.group(1) ?? ''),
+                            style: theme.textTheme.bodyLarge?.copyWith(height: 1.6)),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ));
+          break;
+        case 'img':
+          final srcMatch = RegExp(r'src="([^"]*)"').firstMatch(match.group(0) ?? '');
+          final src = srcMatch?.group(1);
+          if (src != null && src.isNotEmpty) {
+            blocks.add(Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(imageUrl: src, fit: BoxFit.cover),
+              ),
+            ));
+          }
+          break;
+      }
+    }
+
+    if (blocks.isEmpty) {
+      // Fallback: legacy plain-text content with no block tags at all.
+      final text = html.replaceAll(RegExp(r'<[^>]+>'), '').trim();
+      return Text(text, style: theme.textTheme.bodyLarge?.copyWith(height: 1.6));
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: blocks);
   }
+
+  String _stripTags(String s) => s.replaceAll(RegExp(r'<[^>]+>'), '').trim();
 }

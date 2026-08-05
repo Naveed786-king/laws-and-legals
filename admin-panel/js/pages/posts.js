@@ -4,6 +4,7 @@ import {
 } from "../firebase-init.js";
 import { uploadImage } from "../upload.js";
 import { escapeHtml } from "../ui.js";
+import { createBlockEditor } from "../block-editor.js";
 
 async function getCategories() {
   const snap = await getDocs(query(collection(db, "categories"), orderBy("order")));
@@ -62,11 +63,11 @@ export async function render(outlet, toast) {
       <h3>${post ? "Edit Post" : "New Post"}</h3>
       <label class="field-label">Title</label>
       <input id="f-title" value="${post ? escapeHtml(post.title) : ""}" />
-      <label class="field-label">Excerpt</label>
+      <label class="field-label">Excerpt (short summary shown in lists)</label>
       <textarea id="f-excerpt">${post ? escapeHtml(post.excerpt) : ""}</textarea>
       <label class="field-label">Content</label>
-      <textarea id="f-content" style="min-height:160px;">${post ? escapeHtml(post.content) : ""}</textarea>
-      <label class="field-label">Author</label>
+      <div id="content-editor-mount"></div>
+      <label class="field-label" style="margin-top:16px;">Author</label>
       <input id="f-author" value="${post ? escapeHtml(post.author) : ""}" />
       <label class="field-label">Category</label>
       <select id="f-category">
@@ -85,6 +86,12 @@ export async function render(outlet, toast) {
         <button class="btn-secondary" id="cancel-post-btn" style="width:auto;">Cancel</button>
       </div>
     `;
+
+    const initialBlocks = post && post.blocks && post.blocks.length > 0
+      ? post.blocks
+      : (post && post.content ? [{ type: "paragraph", text: post.content.replace(/<[^>]+>/g, "") }] : []);
+    const editor = createBlockEditor(document.getElementById("content-editor-mount"), initialBlocks);
+
     document.getElementById("cancel-post-btn").onclick = () => card.classList.add("hidden");
     document.getElementById("save-post-btn").onclick = async () => {
       const categoryId = document.getElementById("f-category").value;
@@ -96,7 +103,8 @@ export async function render(outlet, toast) {
       const payload = {
         title: document.getElementById("f-title").value.trim(),
         excerpt: document.getElementById("f-excerpt").value.trim(),
-        content: document.getElementById("f-content").value.trim(),
+        content: editor.toHtml(),
+        blocks: editor.toBlocks(),
         author: document.getElementById("f-author").value.trim(),
         categoryId,
         categoryName: category ? category.name : "",

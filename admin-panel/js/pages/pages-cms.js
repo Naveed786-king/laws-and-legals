@@ -1,5 +1,6 @@
 import { db, collection, getDocs, setDoc, deleteDoc, doc, serverTimestamp } from "../firebase-init.js";
 import { escapeHtml } from "../ui.js";
+import { createBlockEditor } from "../block-editor.js";
 
 const DEFAULT_SLUGS = ["about", "contact", "advertise", "privacy", "terms"];
 
@@ -59,17 +60,24 @@ export async function render(outlet, toast) {
       <label class="field-label">Title</label>
       <input id="f-title" value="${page ? escapeHtml(page.title) : ""}" />
       <label class="field-label">Content</label>
-      <textarea id="f-content" style="min-height:200px;">${page ? escapeHtml(page.content) : ""}</textarea>
+      <div id="page-content-mount"></div>
       <div class="row" style="margin-top:16px;">
         <button class="btn-primary" id="save-page-btn" style="width:auto;">Save</button>
         <button class="btn-secondary" id="cancel-page-btn" style="width:auto;">Cancel</button>
       </div>
     `;
+
+    const initialBlocks = page && page.blocks && page.blocks.length > 0
+      ? page.blocks
+      : (page && page.content ? [{ type: "paragraph", text: page.content.replace(/<[^>]+>/g, "") }] : []);
+    const editor = createBlockEditor(document.getElementById("page-content-mount"), initialBlocks);
+
     document.getElementById("cancel-page-btn").onclick = () => card.classList.add("hidden");
     document.getElementById("save-page-btn").onclick = async () => {
       await setDoc(doc(db, "pages", slug), {
         title: document.getElementById("f-title").value.trim(),
-        content: document.getElementById("f-content").value.trim(),
+        content: editor.toHtml(),
+        blocks: editor.toBlocks(),
         updatedAt: serverTimestamp(),
       });
       toast("Page saved");

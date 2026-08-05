@@ -15,11 +15,13 @@ export async function render(outlet, toast) {
       <table>
         <thead><tr><th>Name</th><th>Order</th><th>Actions</th></tr></thead>
         <tbody>
-          ${categories.map((c) => `
+          ${categories.map((c, i) => `
             <tr>
               <td>${escapeHtml(c.name)}</td>
               <td>${c.order}</td>
               <td>
+                <button class="btn-secondary move-cat-up" data-i="${i}" ${i === 0 ? "disabled" : ""}>↑</button>
+                <button class="btn-secondary move-cat-down" data-i="${i}" ${i === categories.length - 1 ? "disabled" : ""}>↓</button>
                 <button class="btn-secondary edit-cat-btn" data-id="${c.id}">Edit</button>
                 <button class="btn-danger delete-cat-btn" data-id="${c.id}">Delete</button>
               </td>
@@ -36,7 +38,7 @@ export async function render(outlet, toast) {
       <table>
         <thead><tr><th>Title</th><th>Category</th><th>Banner</th><th>Order</th><th>Enabled</th><th>Actions</th></tr></thead>
         <tbody>
-          ${sections.map((s) => `
+          ${sections.map((s, i) => `
             <tr>
               <td>${escapeHtml(s.title)}</td>
               <td>${escapeHtml(categories.find((c) => c.id === s.categoryId)?.name || "")}</td>
@@ -44,6 +46,8 @@ export async function render(outlet, toast) {
               <td>${s.order}</td>
               <td>${s.isEnabled ? "Yes" : "No"}</td>
               <td>
+                <button class="btn-secondary move-sec-up" data-i="${i}" ${i === 0 ? "disabled" : ""}>↑</button>
+                <button class="btn-secondary move-sec-down" data-i="${i}" ${i === sections.length - 1 ? "disabled" : ""}>↓</button>
                 <button class="btn-secondary edit-sec-btn" data-id="${s.id}">Edit</button>
                 <button class="btn-danger delete-sec-btn" data-id="${s.id}">Delete</button>
               </td>
@@ -69,6 +73,23 @@ export async function render(outlet, toast) {
       render(outlet, toast);
     };
   });
+  outlet.querySelectorAll(".move-cat-up").forEach((btn) => {
+    btn.onclick = () => swapOrder(categories, Number(btn.dataset.i), -1, "categories");
+  });
+  outlet.querySelectorAll(".move-cat-down").forEach((btn) => {
+    btn.onclick = () => swapOrder(categories, Number(btn.dataset.i), 1, "categories");
+  });
+
+  async function swapOrder(list, index, direction, collectionName) {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= list.length) return;
+    const a = list[index];
+    const b = list[otherIndex];
+    await updateDoc(doc(db, collectionName, a.id), { order: b.order });
+    await updateDoc(doc(db, collectionName, b.id), { order: a.order });
+    toast("Order updated");
+    render(outlet, toast);
+  }
 
   function showCatForm(cat) {
     const card = document.getElementById("cat-form-card");
@@ -104,6 +125,12 @@ export async function render(outlet, toast) {
       toast("Section deleted");
       render(outlet, toast);
     };
+  });
+  outlet.querySelectorAll(".move-sec-up").forEach((btn) => {
+    btn.onclick = () => swapOrder(sections, Number(btn.dataset.i), -1, "homeSections");
+  });
+  outlet.querySelectorAll(".move-sec-down").forEach((btn) => {
+    btn.onclick = () => swapOrder(sections, Number(btn.dataset.i), 1, "homeSections");
   });
 
   function showSecForm(sec) {

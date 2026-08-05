@@ -18,16 +18,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check secret presence
-        run: echo "Secret is set:" "${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}"
-
-      - name: Deploy to Firebase Hosting
+      - name: Deploy Hosting + Firestore rules + Storage rules
         if: env.HAS_SECRET == 'true'
-        uses: FirebaseExtended/action-hosting-deploy@v0
         env:
           HAS_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: basic-buttress-470212-g2
-          channelId: live
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
+          npx firebase-tools@13 deploy \
+            --only hosting,firestore:rules,storage:rules \
+            --project basic-buttress-470212-g2 \
+            --non-interactive
+          rm -f /tmp/firebase-service-account.json
+
+      - name: Reminder if secret missing
+        if: env.HAS_SECRET != 'true'
+        env:
+          HAS_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        run: echo "::warning::FIREBASE_SERVICE_ACCOUNT secret not set yet - nothing was deployed. Add the secret to enable auto-deploy."
