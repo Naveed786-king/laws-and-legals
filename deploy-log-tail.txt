@@ -10,8 +10,7 @@ npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and con
 
 [1m[37m===[39m Deploying to 'basic-buttress-470212-g2'...[22m
 
-[36m[1mi [22m[39m deploying [1mstorage, firestore, hosting[22m
-[36m[1mi  storage:[22m[39m ensuring required API [1mfirebasestorage.googleapis.com[22m is enabled...
+[36m[1mi [22m[39m deploying [1mfirestore, hosting[22m
+[36m[1mi  cloud.firestore:[22m[39m checking [1mfirestore.rules[22m for compilation errors...
 
-[1m[31mError:[39m[22m Request to https://serviceusage.googleapis.com/v1/projects/basic-buttress-470212-g2/services/firebasestorage.googleapis.com had HTTP Error: 403, Permission denied to get service [firebasestorage.googleapis.com]
-Help Token: AdZh9GeduZXN6aegxiKz7FJ1ksjHze5IVDM9Nw3NtudE_ZkVxnh6jYUHKhHaCHJbmlBCKsriN5TgJzn90VFUWWIDMDSiQwIzra75F4QDNitry7ns
+[1m[31mError:[39m[22m Request to https://firebaserules.googleapis.com/v1/projects/basic-buttress-470212-g2:test had HTTP Error: 403, The caller does not have permission
