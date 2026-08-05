@@ -40,13 +40,20 @@ def replace_exactly_one(path: Path, pattern: str, replacement: str, label: str):
     print(f"OK: patched {label} in {path}")
 
 
-def insert_into_block(path: Path, block_start_pattern: str, line_to_insert: str, label: str):
+def insert_into_block(path: Path, block_start_pattern: str, line_to_insert: str, label: str, create_if_missing: bool = False):
     """Inserts `line_to_insert` right after the opening `{` of the first
     block whose header matches block_start_pattern. Robust to whatever
-    already exists inside the block."""
+    already exists inside the block. If no such block exists and
+    create_if_missing is True, appends a brand new block at end of file."""
     text = path.read_text()
     m = re.search(block_start_pattern, text)
     if not m:
+        if create_if_missing:
+            block_name = block_start_pattern.split(r"\s*\{")[0]
+            new_text = text.rstrip() + f"\n\n{block_name} {{\n{line_to_insert}\n}}\n"
+            path.write_text(new_text)
+            print(f"OK: created new {block_name} block with {label} in {path}")
+            return
         print(f"--- {path} content ---")
         print(text)
         raise SystemExit(f"ERROR: could not find block '{block_start_pattern}' in {path} for {label}")
@@ -114,7 +121,7 @@ def main():
             "    implementation 'com.google.firebase:firebase-analytics'\n"
             "    implementation 'com.google.firebase:firebase-messaging'"
         )
-    insert_into_block(app_gradle, r"dependencies\s*\{", deps_lines, "Firebase dependencies")
+    insert_into_block(app_gradle, r"dependencies\s*\{", deps_lines, "Firebase dependencies", create_if_missing=True)
 
     print("\n=== Android platform folder patched successfully ===")
 
