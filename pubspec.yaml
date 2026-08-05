@@ -51,6 +51,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/icons/
+  # No local image assets yet - all images are network-loaded (demo content
+  # uses picsum.photos placeholders; live content will use WordPress/Firebase
+  # Storage URLs). Add an `assets:` section here once real bundled assets
+  # (app icon source art, etc.) exist.

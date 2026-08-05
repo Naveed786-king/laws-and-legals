@@ -123,6 +123,38 @@ def main():
         )
     insert_into_block(app_gradle, r"dependencies\s*\{", deps_lines, "Firebase dependencies", create_if_missing=True)
 
+    # ---- Bump Kotlin Gradle plugin version ----
+    # Firebase's newer native libraries (play-services-measurement, pulled in
+    # via firebase-analytics) are compiled with Kotlin metadata newer than
+    # Flutter's default template's Kotlin plugin version, causing a hard
+    # compileDebugKotlin failure. Bump to a version compatible with recent
+    # Firebase BoM releases.
+    replace_exactly_one(
+        settings_gradle,
+        r'(id\(?\s*"org\.jetbrains\.kotlin\.android"\s*\)?\s+version\s+)["\'][^"\']*["\']',
+        r'\g<1>"2.1.0"',
+        "Kotlin plugin version bump",
+    )
+
+    # ---- Fix the generated smoke test (references a template class name
+    # that doesn't exist in this project) ----
+    test_file = Path("test/widget_test.dart")
+    if test_file.is_file():
+        test_file.write_text(
+            "import 'package:flutter_test/flutter_test.dart';\n"
+            "import 'package:flutter_riverpod/flutter_riverpod.dart';\n"
+            "import 'package:laws_and_legals/main.dart';\n\n"
+            "void main() {\n"
+            "  testWidgets('App builds without crashing', (tester) async {\n"
+            "    await tester.pumpWidget(\n"
+            "      const ProviderScope(child: LawsAndLegalsApp()),\n"
+            "    );\n"
+            "    expect(find.byType(LawsAndLegalsApp), findsOneWidget);\n"
+            "  });\n"
+            "}\n"
+        )
+        print(f"OK: replaced {test_file} with a working smoke test")
+
     print("\n=== Android platform folder patched successfully ===")
 
 
