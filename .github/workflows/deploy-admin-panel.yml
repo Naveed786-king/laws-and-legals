@@ -11,6 +11,9 @@ on:
       - "storage.rules"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,17 +22,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy Hosting + Firestore rules + Storage rules
+        id: deploy
         if: env.HAS_SECRET == 'true'
         env:
           HAS_SECRET: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-service-account.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
-          npx firebase-tools@13 deploy \
-            --only hosting,firestore:rules,storage:rules \
-            --project basic-buttress-470212-g2 \
-            --non-interactive
-          rm -f /tmp/firebase-service-account.json
+          {
+            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-service-account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-service-account.json
+            npx firebase-tools@13 deploy \
+              --only hosting,firestore:rules,storage:rules \
+              --project basic-buttress-470212-g2 \
+              --non-interactive
+            rm -f /tmp/firebase-service-account.json
+          } > deploy-log.txt 2>&1
+        continue-on-error: true
+
+      - name: Show and commit log on failure
+        if: steps.deploy.outcome == 'failure'
+        run: |
+          tail -c 60000 deploy-log.txt > deploy-log-tail.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f deploy-log-tail.txt
+          git commit -m "CI: add deploy log (failure) [skip ci]" || true
+          git push origin HEAD:main || true
+          exit 1
 
       - name: Reminder if secret missing
         if: env.HAS_SECRET != 'true'
