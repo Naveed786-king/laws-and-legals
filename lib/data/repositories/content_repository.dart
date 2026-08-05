@@ -5,83 +5,154 @@ import '../../domain/entities/banner_ad.dart';
 import '../../domain/entities/app_page.dart';
 import '../../domain/entities/youtube_video.dart';
 import '../datasources/demo_data_source.dart';
+import '../datasources/firestore_data_source.dart';
 import '../../core/storage/config_store.dart';
+import '../../core/storage/content_cache_store.dart';
 
-/// Single source of truth for all content in the app. Every screen goes
-/// through this repository instead of talking to demo data or the network
-/// directly - that's what makes the later WordPress connection a one-file
-/// change instead of a rebuild.
+/// Single source of truth for all content in the app.
 ///
-/// Today (Demo Mode) it always returns bundled demo content. Once the user
-/// completes Settings > Configure Everything, [ConfigStore.isDemoMode]
-/// flips to false and the TODO branches below become live Dio calls against
-/// the configured REST API URL - no screen code changes required.
+/// Fallback chain for every read: Firestore (live, written by the Admin
+/// Panel) -> Hive cache (last successful live fetch, for offline reading)
+/// -> bundled demo content (fresh install with no live data yet, or first
+/// launch with no connection). This means the app "goes live" automatically
+/// the moment real categories exist in Firestore - no manual toggle needed.
 class ContentRepository {
-  ContentRepository(this._configStore);
-  final ConfigStore _configStore;
+  ContentRepository(this._configStore)
+      : _firestore = FirestoreDataSource(),
+        _cache = ContentCacheStore();
 
-  Future<List<HomeSection>> getHomeSections() async {
-    final demo = await _configStore.isDemoMode;
-    if (demo) return DemoDataSource.homeSections;
-    // TODO(live): GET {restApiUrl}/posts grouped by category via Dio.
-    return DemoDataSource.homeSections;
-  }
+  final ConfigStore _configStore; // kept for future WordPress-style config UI
+  final FirestoreDataSource _firestore;
+  final ContentCacheStore _cache;
 
   Future<List<Category>> getCategories() async {
-    final demo = await _configStore.isDemoMode;
-    if (demo) return DemoDataSource.categories;
-    // TODO(live): GET {categoryApi}
+    final live = await _firestore.getCategories();
+    if (live.isNotEmpty) {
+      await _cache.save('categories', live.map((c) => {'id': c.id, 'name': c.name}).toList());
+      return live;
+    }
+    final cached = await _cache.read<List>('categories');
+    if (cached != null && cached.isNotEmpty) {
+      return cached.map((m) => Category(id: m['id'], name: m['name'])).toList();
+    }
     return DemoDataSource.categories;
   }
 
+  Future<List<HomeSection>> getHomeSections() async {
+    final liveCategories = await _firestore.getCategories();
+
+    if (liveCategories.isNotEmpty) {
+      final sectionConfigs = await _firestore.getHomeSectionConfigs();
+      final allPosts = await _firestore.getPublishedPosts();
+      final sections = <HomeSection>[];
+      for (final cfg in sectionConfigs) {
+        final categoryId = cfg['categoryId'] as String? ?? '';
+        final posts = allPosts.where((p) => p.categoryId == categoryId).toList();
+        if (posts.isEmpty) continue;
+        sections.add(HomeSection(
+          id: cfg['id'] as String,
+          title: cfg['title'] as String? ?? '',
+          categoryId: categoryId,
+          posts: posts,
+          bannerPosition: switch (cfg['bannerPosition']) {
+            'above' => BannerPosition.above,
+            'below' => BannerPosition.below,
+            _ => BannerPosition.none,
+          },
+          order: (cfg['order'] ?? 0) as int,
+        ));
+      }
+      if (sections.isNotEmpty) {
+        await _cache.save('posts', allPosts.map((p) => p.toMap()..['id'] = p.id).toList());
+        return sections;
+      }
+    }
+
+    final cachedPosts = await _cache.read<List>('posts');
+    if (cachedPosts != null && cachedPosts.isNotEmpty) {
+      final posts = cachedPosts.map((m) => Post.fromMap(m)).toList();
+      final byCategory = <String, List<Post>>{};
+      for (final p in posts) {
+        byCategory.putIfAbsent(p.categoryId, () => []).add(p);
+      }
+      var order = 0;
+      return byCategory.entries.map((e) {
+        return HomeSection(
+          id: 'cached-${e.key}',
+          title: e.value.first.categoryName,
+          categoryId: e.key,
+          posts: e.value,
+          bannerPosition: BannerPosition.none,
+          order: order++,
+        );
+      }).toList();
+    }
+
+    return DemoDataSource.homeSections;
+  }
+
   Future<List<Post>> getPostsByCategory(String categoryId) async {
-    final demo = await _configStore.isDemoMode;
-    if (demo) {
-      return DemoDataSource.allPosts
+    final live = await _firestore.getPublishedPosts();
+    if (live.isNotEmpty) {
+      return live.where((p) => p.categoryId == categoryId).toList();
+    }
+    final cachedPosts = await _cache.read<List>('posts');
+    if (cachedPosts != null && cachedPosts.isNotEmpty) {
+      return cachedPosts
+          .map((m) => Post.fromMap(m))
           .where((p) => p.categoryId == categoryId)
           .toList();
     }
-    // TODO(live): GET {postApi}?category={categoryId}
-    return DemoDataSource.allPosts
-        .where((p) => p.categoryId == categoryId)
-        .toList();
+    return DemoDataSource.allPosts.where((p) => p.categoryId == categoryId).toList();
   }
 
   Future<Post?> getPostById(String id) async {
-    final all = DemoDataSource.allPosts;
+    final live = await _firestore.getPostById(id);
+    if (live != null) return live;
+    final cachedPosts = await _cache.read<List>('posts');
+    if (cachedPosts != null) {
+      for (final m in cachedPosts) {
+        final p = Post.fromMap(m);
+        if (p.id == id) return p;
+      }
+    }
     try {
-      return all.firstWhere((p) => p.id == id);
+      return DemoDataSource.allPosts.firstWhere((p) => p.id == id);
     } catch (_) {
       return null;
     }
   }
 
   Future<List<Post>> getRelatedPosts(Post post, {int limit = 4}) async {
-    return DemoDataSource.allPosts
-        .where((p) => p.categoryId == post.categoryId && p.id != post.id)
-        .take(limit)
-        .toList();
+    final all = await getPostsByCategory(post.categoryId);
+    return all.where((p) => p.id != post.id).take(limit).toList();
   }
 
   Future<List<Post>> search(String query) async {
     if (query.trim().isEmpty) return [];
     final q = query.toLowerCase();
-    return DemoDataSource.allPosts
-        .where((p) =>
-            p.title.toLowerCase().contains(q) ||
-            p.excerpt.toLowerCase().contains(q))
+    final live = await _firestore.getPublishedPosts();
+    final source = live.isNotEmpty ? live : DemoDataSource.allPosts;
+    return source
+        .where((p) => p.title.toLowerCase().contains(q) || p.excerpt.toLowerCase().contains(q))
         .toList();
   }
 
   Future<List<BannerAd>> getBanners(String position) async {
-    return DemoDataSource.banners
-        .where((b) => b.position == position && b.isEnabled && b.isVisible)
-        .toList();
+    final live = await _firestore.getBanners(position);
+    if (live.isNotEmpty) return live;
+    return DemoDataSource.banners.where((b) => b.position == position && b.isEnabled).toList();
   }
 
-  Future<List<AppPage>> getPages() async => DemoDataSource.pages;
+  Future<List<AppPage>> getPages() async {
+    final live = await _firestore.getPages();
+    if (live.isNotEmpty) return live;
+    return DemoDataSource.pages;
+  }
 
   Future<AppPage?> getPageBySlug(String slug) async {
+    final live = await _firestore.getPageBySlug(slug);
+    if (live != null) return live;
     try {
       return DemoDataSource.pages.firstWhere((p) => p.slug == slug);
     } catch (_) {
