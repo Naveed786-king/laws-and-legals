@@ -27,55 +27,46 @@ jobs:
           flutter-version: '3.24.3'
           channel: 'stable'
 
-      - name: Generate Android platform folder
+      - name: Full build pipeline (fully logged)
+        id: pipeline
         run: |
-          flutter create --platforms=android --org com.lawandlegal --project-name laws_and_legals .
-          # Give the app a human-friendly label instead of the raw project name.
-          sed -i 's/android:label="laws_and_legals"/android:label="Laws And Legals"/' android/app/src/main/AndroidManifest.xml
-          # This Firebase project's Android app is registered under package
-          # name "com.lawandlegal" exactly (no extra suffix), matching the
-          # committed google-services.json. `flutter create --org` appends the
-          # project name as a suffix, so we override applicationId/namespace
-          # directly to match exactly.
-          sed -i 's/applicationId = "com.lawandlegal.laws_and_legals"/applicationId = "com.lawandlegal"/' android/app/build.gradle.kts
-          sed -i 's/namespace = "com.lawandlegal.laws_and_legals"/namespace = "com.lawandlegal"/' android/app/build.gradle.kts
+          set -x
+          {
+            flutter create --platforms=android --org com.lawandlegal --project-name laws_and_legals .
 
-      - name: Wire in Firebase (google-services plugin + config)
-        run: |
-          cp firebase-config/google-services.json android/app/google-services.json
-          # Root-level plugin declaration
-          sed -i '/id("org.jetbrains.kotlin.android") version .* apply false/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
-          # App-level: apply the plugin
-          sed -i '/id("org.jetbrains.kotlin.android")/a\    id("com.google.gms.google-services")' android/app/build.gradle.kts
-          # App-level: add Firebase BoM + Analytics + Messaging (Core is enough
-          # to satisfy the plugin; Messaging matches the Flutter firebase_messaging package)
-          sed -i '/dependencies {/a\    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))\n    implementation("com.google.firebase:firebase-analytics")\n    implementation("com.google.firebase:firebase-messaging")' android/app/build.gradle.kts
-          echo "--- settings.gradle.kts ---"; cat android/settings.gradle.kts
-          echo "--- app/build.gradle.kts ---"; cat android/app/build.gradle.kts
+            sed -i 's/android:label="laws_and_legals"/android:label="Laws And Legals"/' android/app/src/main/AndroidManifest.xml
 
-      - name: Install dependencies
-        run: flutter pub get
+            sed -i 's/applicationId = "com.lawandlegal.laws_and_legals"/applicationId = "com.lawandlegal"/' android/app/build.gradle.kts
+            sed -i 's/namespace = "com.lawandlegal.laws_and_legals"/namespace = "com.lawandlegal"/' android/app/build.gradle.kts
 
-      - name: Analyze (non-blocking)
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+            cp firebase-config/google-services.json android/app/google-services.json
 
-      - name: Build Debug APK
-        id: build_apk
-        run: flutter build apk --debug > build-log.txt 2>&1
-        continue-on-error: true
+            sed -i '/id("org.jetbrains.kotlin.android") version .* apply false/a\    id("com.google.gms.google-services") version "4.4.2" apply false' android/settings.gradle.kts
+            sed -i '/id("org.jetbrains.kotlin.android")/a\    id("com.google.gms.google-services")' android/app/build.gradle.kts
+            sed -i '/dependencies {/a\    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))\n    implementation("com.google.firebase:firebase-analytics")\n    implementation("com.google.firebase:firebase-messaging")' android/app/build.gradle.kts
 
-      - name: Build Release AAB
-        id: build_aab
-        if: steps.build_apk.outcome == 'success'
-        run: flutter build appbundle --release >> build-log.txt 2>&1
+            echo "--- settings.gradle.kts ---"; cat android/settings.gradle.kts
+            echo "--- app/build.gradle.kts ---"; cat android/app/build.gradle.kts
+            echo "--- AndroidManifest.xml ---"; cat android/app/src/main/AndroidManifest.xml
+
+            flutter pub get
+            flutter analyze --no-fatal-infos --no-fatal-warnings || true
+            flutter build apk --debug
+            flutter build appbundle --release
+          } > build-log.txt 2>&1
         continue-on-error: true
 
       - name: Prepare log tail
         if: always()
-        run: tail -c 60000 build-log.txt > build-log-tail.txt || cp build-log.txt build-log-tail.txt
+        run: |
+          if [ -f build-log.txt ]; then
+            tail -c 80000 build-log.txt > build-log-tail.txt
+          else
+            echo "build-log.txt was never created - pipeline failed before any output was captured." > build-log-tail.txt
+          fi
 
       - name: Commit log on failure
-        if: steps.build_apk.outcome == 'failure' || steps.build_aab.outcome == 'failure'
+        if: steps.pipeline.outcome == 'failure'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -83,8 +74,8 @@ jobs:
           git commit -m "CI: add build log (failure) [skip ci]" || true
           git push origin HEAD:main || true
 
-      - name: Fail job if any build failed
-        if: steps.build_apk.outcome == 'failure' || steps.build_aab.outcome == 'failure'
+      - name: Fail job if pipeline failed
+        if: steps.pipeline.outcome == 'failure'
         run: exit 1
 
       - name: Rename outputs for friendly filenames
