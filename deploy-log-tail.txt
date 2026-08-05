@@ -1,0 +1,17 @@
+npm warn exec The following package was not found and will be installed: firebase-tools@13.35.1
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm warn deprecated tar@6.2.1: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated json-ptr@3.1.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+[1m[37m===[39m Deploying to 'basic-buttress-470212-g2'...[22m
+
+[36m[1mi [22m[39m deploying [1mstorage, firestore, hosting[22m
+[36m[1mi  storage:[22m[39m ensuring required API [1mfirebasestorage.googleapis.com[22m is enabled...
+
+[1m[31mError:[39m[22m Request to https://serviceusage.googleapis.com/v1/projects/basic-buttress-470212-g2/services/firebasestorage.googleapis.com had HTTP Error: 403, Permission denied to get service [firebasestorage.googleapis.com]
+Help Token: AdZh9GeduZXN6aegxiKz7FJ1ksjHze5IVDM9Nw3NtudE_ZkVxnh6jYUHKhHaCHJbmlBCKsriN5TgJzn90VFUWWIDMDSiQwIzra75F4QDNitry7ns
