@@ -75,6 +75,58 @@ In order to run your application, type:
 
 Your application code is in ./lib/main.dart.
 
-+ sed -i 's/android:label="laws_and_legals"/android:label="Laws And Legals"/' android/app/src/main/AndroidManifest.xml
-+ sed -i 's/applicationId = "com.lawandlegal.laws_and_legals"/applicationId = "com.lawandlegal"/' android/app/build.gradle.kts
-sed: can't read android/app/build.gradle.kts: No such file or directory
++ python3 scripts/patch_android.py
+OK: patched applicationId in android/app/build.gradle
+OK: patched namespace in android/app/build.gradle
+OK: patched app label in android/app/src/main/AndroidManifest.xml
+OK: copied google-services.json
+OK: inserted google-services plugin (settings) into android/settings.gradle
+OK: inserted google-services plugin (app) into android/app/build.gradle
+--- android/app/build.gradle content ---
+plugins {
+    id "com.google.gms.google-services"
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace "com.lawandlegal"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.lawandlegal"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+ERROR: could not find block 'dependencies\s*\{' in android/app/build.gradle for Firebase dependencies
