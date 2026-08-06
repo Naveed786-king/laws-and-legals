@@ -1,7 +1,6 @@
 import {
   db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy
 } from "../firebase-init.js";
-import { uploadImage } from "../upload.js";
 
 const POSITIONS = ["home_top", "home_middle", "post_bottom"];
 
@@ -63,9 +62,9 @@ export async function render(outlet, toast) {
       <label class="field-label">Priority (lower shows first)</label>
       <input type="number" id="f-priority" value="${banner ? banner.priority : 1}" />
       <label class="field-label"><input type="checkbox" id="f-enabled" ${!banner || banner.isEnabled ? "checked" : ""} style="width:auto;display:inline;"/> Enabled</label>
-      <label class="field-label">Banner Image</label>
-      <input type="file" id="f-image" accept="image/*" />
-      ${banner && banner.imageUrl ? `<img class="thumb" src="${banner.imageUrl}" style="width:160px;height:auto;margin-top:8px;" />` : ""}
+      <label class="field-label">Banner Image URL</label>
+      <input id="f-image-url" value="${banner ? (banner.imageUrl || '') : ''}" placeholder="https://... (paste any image URL)" />
+      ${banner && banner.imageUrl ? `<img class="thumb" src="${banner.imageUrl}" style="width:160px;height:auto;margin-top:8px;" onerror="this.style.display='none'" />` : ""}
       <div class="row" style="margin-top:16px;">
         <button class="btn-primary" id="save-banner-btn" style="width:auto;">Save</button>
         <button class="btn-secondary" id="cancel-banner-btn" style="width:auto;">Cancel</button>
@@ -73,26 +72,29 @@ export async function render(outlet, toast) {
     `;
     document.getElementById("cancel-banner-btn").onclick = () => card.classList.add("hidden");
     document.getElementById("save-banner-btn").onclick = async () => {
-      const file = document.getElementById("f-image").files[0];
-      let imageUrl = banner ? banner.imageUrl : "";
-      if (file) imageUrl = await uploadImage(file, "banners");
+      try {
+        const imageUrl = document.getElementById("f-image-url").value.trim();
 
-      const payload = {
-        destinationUrl: document.getElementById("f-url").value.trim(),
-        position: document.getElementById("f-position").value,
-        priority: Number(document.getElementById("f-priority").value) || 0,
-        isEnabled: document.getElementById("f-enabled").checked,
-        isVisible: true,
-        imageUrl: imageUrl || "",
-      };
+        const payload = {
+          destinationUrl: document.getElementById("f-url").value.trim(),
+          position: document.getElementById("f-position").value,
+          priority: Number(document.getElementById("f-priority").value) || 0,
+          isEnabled: document.getElementById("f-enabled").checked,
+          isVisible: true,
+          imageUrl: imageUrl || "",
+        };
 
-      if (banner) {
-        await updateDoc(doc(db, "banners", banner.id), payload);
-      } else {
-        await addDoc(collection(db, "banners"), payload);
+        if (banner) {
+          await updateDoc(doc(db, "banners", banner.id), payload);
+        } else {
+          await addDoc(collection(db, "banners"), payload);
+        }
+        toast("Banner saved");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not save: " + (err && err.message ? err.message : err));
       }
-      toast("Banner saved");
-      render(outlet, toast);
     };
   }
 }

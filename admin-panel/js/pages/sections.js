@@ -102,14 +102,19 @@ export async function render(outlet, toast) {
       <button class="btn-primary" id="save-cat-btn" style="width:auto;">Save</button>
     `;
     document.getElementById("save-cat-btn").onclick = async () => {
-      const payload = {
-        name: document.getElementById("c-name").value.trim(),
-        order: Number(document.getElementById("c-order").value) || 0,
-      };
-      if (cat) await updateDoc(doc(db, "categories", cat.id), payload);
-      else await addDoc(collection(db, "categories"), payload);
-      toast("Category saved");
-      render(outlet, toast);
+      try {
+        const payload = {
+          name: document.getElementById("c-name").value.trim(),
+          order: Number(document.getElementById("c-order").value) || 0,
+        };
+        if (cat) await updateDoc(doc(db, "categories", cat.id), payload);
+        else await addDoc(collection(db, "categories"), payload);
+        toast("Category saved");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not save: " + (err && err.message ? err.message : err));
+      }
     };
   }
 
@@ -155,19 +160,24 @@ export async function render(outlet, toast) {
       <button class="btn-primary" id="save-sec-btn" style="width:auto;">Save</button>
     `;
     document.getElementById("save-sec-btn").onclick = async () => {
-      const categoryId = document.getElementById("s-category").value;
-      const category = categories.find((c) => c.id === categoryId);
-      const payload = {
-        title: document.getElementById("s-title").value.trim(),
-        categoryId,
-        bannerPosition: document.getElementById("s-banner").value,
-        order: Number(document.getElementById("s-order").value) || 0,
-        isEnabled: document.getElementById("s-enabled").checked,
-      };
-      if (sec) await updateDoc(doc(db, "homeSections", sec.id), payload);
-      else await addDoc(collection(db, "homeSections"), payload);
-      toast("Section saved");
-      render(outlet, toast);
+      try {
+        const categoryId = document.getElementById("s-category").value;
+        const category = categories.find((c) => c.id === categoryId);
+        const payload = {
+          title: document.getElementById("s-title").value.trim(),
+          categoryId,
+          bannerPosition: document.getElementById("s-banner").value,
+          order: Number(document.getElementById("s-order").value) || 0,
+          isEnabled: document.getElementById("s-enabled").checked,
+        };
+        if (sec) await updateDoc(doc(db, "homeSections", sec.id), payload);
+        else await addDoc(collection(db, "homeSections"), payload);
+        toast("Section saved");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not save: " + (err && err.message ? err.message : err));
+      }
     };
   }
 }

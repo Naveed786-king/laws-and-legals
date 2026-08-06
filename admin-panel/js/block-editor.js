@@ -1,4 +1,3 @@
-import { uploadImage } from "./upload.js";
 import { escapeHtml } from "./ui.js";
 
 /**
@@ -67,8 +66,8 @@ export function createBlockEditor(container, initialBlocks = []) {
       wrap.innerHTML = controls + `<div class="list-items">${itemsHtml}</div><button type="button" class="btn-secondary add-list-item" data-i="${index}">+ Item</button>`;
     } else if (block.type === "image") {
       wrap.innerHTML = controls +
-        `<input type="file" class="block-image-input" data-i="${index}" accept="image/*" />` +
-        (block.url ? `<img class="thumb" src="${block.url}" style="width:160px;height:auto;margin-top:8px;display:block;" />` : "");
+        `<input class="block-image-url" data-i="${index}" value="${escapeHtml(block.url || "")}" placeholder="Paste image URL (e.g. https://...)" />` +
+        (block.url ? `<img class="thumb" src="${block.url}" style="width:160px;height:auto;margin-top:8px;display:block;" onerror="this.style.display='none'" />` : "");
     }
 
     return wrap;
@@ -81,6 +80,8 @@ export function createBlockEditor(container, initialBlocks = []) {
     } else if (e.target.classList.contains("list-item-input")) {
       const itemIdx = Number(e.target.dataset.item);
       blocks[i].items[itemIdx] = e.target.value;
+    } else if (e.target.classList.contains("block-image-url")) {
+      blocks[i].url = e.target.value;
     }
   });
 
@@ -105,17 +106,11 @@ export function createBlockEditor(container, initialBlocks = []) {
     }
   });
 
-  container.addEventListener("change", async (e) => {
-    if (e.target.classList.contains("block-image-input")) {
-      const i = Number(e.target.dataset.i);
-      const file = e.target.files[0];
-      if (file) {
-        const url = await uploadImage(file, "content-images");
-        blocks[i].url = url;
-        render();
-      }
-    }
-  });
+  // Refresh the preview thumbnail once the user finishes typing a URL,
+  // without re-rendering (and losing focus) on every keystroke.
+  container.addEventListener("blur", (e) => {
+    if (e.target.classList.contains("block-image-url")) render();
+  }, true);
 
   render();
 

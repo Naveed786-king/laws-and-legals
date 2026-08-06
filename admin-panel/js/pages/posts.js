@@ -2,7 +2,6 @@ import {
   db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc,
   query, orderBy, serverTimestamp
 } from "../firebase-init.js";
-import { uploadImage } from "../upload.js";
 import { escapeHtml } from "../ui.js";
 import { createBlockEditor } from "../block-editor.js";
 
@@ -78,9 +77,9 @@ export async function render(outlet, toast) {
         <option value="published" ${post && post.status === "published" ? "selected" : ""}>Published</option>
         <option value="draft" ${!post || post.status === "draft" ? "selected" : ""}>Draft</option>
       </select>
-      <label class="field-label">Featured Image</label>
-      <input type="file" id="f-image" accept="image/*" />
-      ${post && post.imageUrl ? `<img class="thumb" src="${post.imageUrl}" style="width:120px;height:80px;margin-top:8px;" />` : ""}
+      <label class="field-label">Featured Image URL</label>
+      <input id="f-image-url" value="${post ? escapeHtml(post.imageUrl || "") : ""}" placeholder="https://... (paste any image URL)" />
+      ${post && post.imageUrl ? `<img class="thumb" src="${post.imageUrl}" style="width:120px;height:80px;margin-top:8px;" onerror="this.style.display='none'" />` : ""}
       <div class="row" style="margin-top:16px;">
         <button class="btn-primary" id="save-post-btn" style="width:auto;">Save</button>
         <button class="btn-secondary" id="cancel-post-btn" style="width:auto;">Cancel</button>
@@ -94,34 +93,43 @@ export async function render(outlet, toast) {
 
     document.getElementById("cancel-post-btn").onclick = () => card.classList.add("hidden");
     document.getElementById("save-post-btn").onclick = async () => {
-      const categoryId = document.getElementById("f-category").value;
-      const category = categories.find((c) => c.id === categoryId);
-      const file = document.getElementById("f-image").files[0];
-      let imageUrl = post ? post.imageUrl : "";
-      if (file) imageUrl = await uploadImage(file, "posts");
+      const saveBtn = document.getElementById("save-post-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+      try {
+        const categoryId = document.getElementById("f-category").value;
+        const category = categories.find((c) => c.id === categoryId);
+        const imageUrl = document.getElementById("f-image-url").value.trim();
 
-      const payload = {
-        title: document.getElementById("f-title").value.trim(),
-        excerpt: document.getElementById("f-excerpt").value.trim(),
-        content: editor.toHtml(),
-        blocks: editor.toBlocks(),
-        author: document.getElementById("f-author").value.trim(),
-        categoryId,
-        categoryName: category ? category.name : "",
-        status: document.getElementById("f-status").value,
-        imageUrl: imageUrl || "",
-        updatedAt: serverTimestamp(),
-      };
+        const payload = {
+          title: document.getElementById("f-title").value.trim(),
+          excerpt: document.getElementById("f-excerpt").value.trim(),
+          content: editor.toHtml(),
+          blocks: editor.toBlocks(),
+          author: document.getElementById("f-author").value.trim(),
+          categoryId,
+          categoryName: category ? category.name : "",
+          status: document.getElementById("f-status").value,
+          imageUrl: imageUrl || "",
+          updatedAt: serverTimestamp(),
+        };
 
-      if (post) {
-        await updateDoc(doc(db, "posts", post.id), payload);
-      } else {
-        payload.publishedAt = serverTimestamp();
-        payload.tags = [];
-        await addDoc(collection(db, "posts"), payload);
+        if (post) {
+          await updateDoc(doc(db, "posts", post.id), payload);
+        } else {
+          payload.publishedAt = serverTimestamp();
+          payload.tags = [];
+          await addDoc(collection(db, "posts"), payload);
+        }
+        toast("Post saved");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not save: " + (err && err.message ? err.message : err) +
+          "\n\nIf this says permission-denied, the Firestore security rules haven't been published in Firebase Console yet.");
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
       }
-      toast("Post saved");
-      render(outlet, toast);
     };
   }
 }

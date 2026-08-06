@@ -74,14 +74,19 @@ export async function render(outlet, toast) {
 
     document.getElementById("cancel-page-btn").onclick = () => card.classList.add("hidden");
     document.getElementById("save-page-btn").onclick = async () => {
-      await setDoc(doc(db, "pages", slug), {
-        title: document.getElementById("f-title").value.trim(),
-        content: editor.toHtml(),
-        blocks: editor.toBlocks(),
-        updatedAt: serverTimestamp(),
-      });
-      toast("Page saved");
-      render(outlet, toast);
+      try {
+        await setDoc(doc(db, "pages", slug), {
+          title: document.getElementById("f-title").value.trim(),
+          content: editor.toHtml(),
+          blocks: editor.toBlocks(),
+          updatedAt: serverTimestamp(),
+        });
+        toast("Page saved");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not save: " + (err && err.message ? err.message : err));
+      }
     };
   }
 }

@@ -35,11 +35,16 @@ export async function render(outlet, toast) {
   });
 
   document.getElementById("save-theme-btn").onclick = async () => {
-    const payload = {};
-    Object.keys(DEFAULTS).forEach((key) => {
-      payload[key] = document.getElementById(`t-${key}`).value;
-    });
-    await setDoc(doc(db, "theme", "config"), payload);
-    toast("Theme saved");
+    try {
+      const payload = {};
+      Object.keys(DEFAULTS).forEach((key) => {
+        payload[key] = document.getElementById(`t-${key}`).value;
+      });
+      await setDoc(doc(db, "theme", "config"), payload);
+      toast("Theme saved");
+    } catch (err) {
+      console.error(err);
+      alert("Could not save: " + (err && err.message ? err.message : err));
+    }
   };
 }
