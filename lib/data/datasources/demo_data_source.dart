@@ -17,6 +17,8 @@ class DemoDataSource {
   static final List<Category> categories = [
     const Category(id: 'top-stories', name: 'टॉप स्टोरीज'),
     const Category(id: 'national', name: 'राष्ट्रीय'),
+    const Category(id: 'reportable-judgement', name: 'रिपोर्टेबल जजमेंट'),
+    const Category(id: 'laws-legals', name: 'लॉज एंड लीगल्स'),
     const Category(id: 'law', name: 'कानून'),
     const Category(id: 'bar-bench', name: 'बार व बेंच'),
     const Category(id: 'art-justice', name: 'आर्ट एंड जस्टिस'),

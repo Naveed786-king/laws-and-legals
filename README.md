@@ -43,6 +43,18 @@ to "Not Configured" until filled in.
 - WooCommerce membership/subscription screens (future-ready per spec, not
   active yet)
 
+## Suggested categories to add in the Admin Panel
+
+To match the reference site's information architecture, create these categories
+under Admin Panel > Home Sections (order doesn't matter, just add them once):
+
+टॉप स्टोरीज, राष्ट्रीय, रिपोर्टेबल जजमेंट, लॉज एंड लीगल्स, कानून, बार व बेंच,
+आर्ट एंड जस्टिस, लीगल सर्विस, लीगल एज्यूकेशन, परिचर्चा
+
+Then add a Home Section for each one you want to appear on the home page.
+This is just a starting taxonomy - add, rename, or remove categories anytime
+from the Admin Panel with no app rebuild needed.
+
 ## Building the APK/AAB
 
 Every push to `main` triggers `.github/workflows/build.yml`, which:
