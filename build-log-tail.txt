@@ -83,6 +83,10 @@ OK: copied google-services.json
 OK: inserted google-services plugin (settings) into android/settings.gradle
 OK: inserted google-services plugin (app) into android/app/build.gradle
 OK: created new dependencies block with Firebase dependencies in android/app/build.gradle
+OK: patched Kotlin plugin version bump in android/settings.gradle
+OK: wrote android/app/src/main/kotlin/com/lawandlegal/MainActivity.kt with package com.lawandlegal
+OK: removed stale android/app/src/main/kotlin/com/lawandlegal/laws_and_legals/MainActivity.kt
+OK: replaced test/widget_test.dart with a working smoke test
 
 === Android platform folder patched successfully ===
 + flutter pub get
@@ -166,7 +170,7 @@ Downloading packages...
   vector_graphics_compiler 1.1.16 (1.3.0 available)
   vector_math 2.1.4 (2.4.2 available)
   vm_service 14.2.5 (15.2.0 available)
-  win32 5.10.1 (6.3.0 available)
+  win32 5.10.1 (6.4.0 available)
   xml 6.5.0 (7.0.1 available)
 Got dependencies!
 80 packages have newer versions incompatible with dependency constraints.
@@ -174,17 +178,15 @@ Try `flutter pub outdated` for more information.
 + flutter analyze --no-fatal-infos --no-fatal-warnings
 Analyzing laws-and-legals...                                    
 
-   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/home/presentation/screens/home_screen.dart:41:23 • prefer_const_literals_to_create_immutables
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:95:13 • prefer_const_constructors
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:103:13 • prefer_const_constructors
+warning • The value of the field '_configStore' isn't used • lib/data/repositories/content_repository.dart:24:21 • unused_field
+  error • The argument type 'Builder' can't be assigned to the parameter type 'PreferredSizeWidget?'.  • lib/features/home/presentation/screens/home_screen.dart:23:15 • argument_type_not_assignable
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/home/presentation/screens/home_screen.dart:44:23 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:105:13 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:113:13 • prefer_const_constructors
 warning • Unused import: '../../../core/providers/core_providers.dart' • lib/features/settings/presentation/settings_screen.dart:5:8 • unused_import
    info • Use 'const' with the constructor to improve performance • lib/features/youtube/presentation/youtube_screen.dart:48:37 • prefer_const_constructors
-warning • The asset directory 'assets/images/' doesn't exist • pubspec.yaml:55:7 • asset_directory_does_not_exist
-warning • The asset directory 'assets/icons/' doesn't exist • pubspec.yaml:56:7 • asset_directory_does_not_exist
-warning • Unused import: 'package:laws_and_legals/main.dart' • test/widget_test.dart:11:8 • unused_import
-  error • The name 'MyApp' isn't a class • test/widget_test.dart:16:35 • creation_with_non_type
 
-9 issues found. (ran in 16.1s)
+7 issues found. (ran in 14.5s)
 + true
 + flutter build apk --debug
 
@@ -196,19 +198,19 @@ Preparing "Install Android SDK Build-Tools 33.0.1 v.33.0.1".
 Installing Android SDK Build-Tools 33.0.1 in /usr/local/lib/android/sdk/build-tools/33.0.1
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" complete.
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" finished.
-Error: unable to find directory entry in pubspec.yaml: /home/runner/work/laws-and-legals/laws-and-legals/assets/images/
-Error: unable to find directory entry in pubspec.yaml: /home/runner/work/laws-and-legals/laws-and-legals/assets/icons/
-e: file:///home/runner/.gradle/caches/transforms-3/594e3c23903c0179d1424fb43f2dfce8/transformed/jetified-play-services-measurement-api-22.5.0-api.jar!/META-INF/java.com.google.android.gmscore.integ.client.measurement_api_measurement_api.kotlin_moduleModule was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.1.0, expected version is 1.8.0.
-e: file:///home/runner/.gradle/caches/transforms-3/9c02151ba3e01cd5ae7568da16a36d5c/transformed/jetified-play-services-measurement-impl-22.5.0-api.jar!/META-INF/java.com.google.android.gms.libs.filecompliance.proto_file_access_api_type_kt_proto_lite.kotlin_moduleModule was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.1.0, expected version is 1.8.0.
-e: file:///home/runner/.gradle/caches/transforms-3/9c02151ba3e01cd5ae7568da16a36d5c/transformed/jetified-play-services-measurement-impl-22.5.0-api.jar!/META-INF/third_party.kotlin.protobuf.src.commonMain.kotlin.com.google.protobuf.kotlin_only_for_use_in_proto_generated_code_its_generator_and_tests.kotlin_moduleModule was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.1.0, expected version is 1.8.0.
-e: file:///home/runner/.gradle/caches/transforms-3/9c02151ba3e01cd5ae7568da16a36d5c/transformed/jetified-play-services-measurement-impl-22.5.0-api.jar!/META-INF/third_party.kotlin.protobuf.src.commonMain.kotlin.com.google.protobuf.kotlin_shared_runtime.kotlin_moduleModule was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.1.0, expected version is 1.8.0.
+lib/features/home/presentation/screens/home_screen.dart:23:15: Error: The argument type 'Builder' can't be assigned to the parameter type 'PreferredSizeWidget?'.
+ - 'Builder' is from 'package:flutter/src/widgets/basic.dart' ('/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/packages/flutter/lib/src/widgets/basic.dart').
+ - 'PreferredSizeWidget' is from 'package:flutter/src/widgets/preferred_size.dart' ('/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/packages/flutter/lib/src/widgets/preferred_size.dart').
+      appBar: Builder(
+              ^
+Target kernel_snapshot_program failed: Exception
+
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:compileDebugKotlin'.
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
-   > Compilation error. See log for more details
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command '/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/bin/flutter'' finished with non-zero exit value 1
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -216,18 +218,6 @@ Execution failed for task ':app:compileDebugKotlin'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 4m 29s
-Running Gradle task 'assembleDebug'...                            270.1s
-
-┌─ Flutter Fix ────────────────────────────────────────────────────────────────────────────────┐
-│ [!] Your project requires a newer version of the Kotlin Gradle plugin.                       │
-│ Find the latest version on https://kotlinlang.org/docs/releases.html#release-details, then   │
-│ update the                                                                                   │
-│ version number of the plugin with id "org.jetbrains.kotlin.android" in the plugins block of  │
-│ /home/runner/work/laws-and-legals/laws-and-legals/android/settings.gradle.                   │
-│                                                                                              │
-│ Alternatively (if your project was created before Flutter 3.19), update                      │
-│ /home/runner/work/laws-and-legals/laws-and-legals/android/build.gradle                       │
-│ ext.kotlin_version = '<latest-version>'                                                      │
-└──────────────────────────────────────────────────────────────────────────────────────────────┘
+BUILD FAILED in 2m 34s
+Running Gradle task 'assembleDebug'...                            154.9s
 Gradle task assembleDebug failed with exit code 1
