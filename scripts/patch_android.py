@@ -136,6 +136,46 @@ def main():
         "Kotlin plugin version bump",
     )
 
+    # ---- Relocate MainActivity to match the new package exactly ----
+    # `flutter create --org com.lawandlegal --project-name laws_and_legals`
+    # puts MainActivity.kt under com/lawandlegal/laws_and_legals/ with that
+    # full package statement. Since applicationId/namespace were just
+    # overridden to the shorter "com.lawandlegal" (no suffix) above, the
+    # AndroidManifest's ".MainActivity" now resolves against the new
+    # namespace and can no longer find the class at its old package/path -
+    # the app installs but the launcher can't resolve any activity to open,
+    # so tapping the icon does nothing at all (no crash, no error, nothing).
+    kotlin_root = Path("android/app/src/main/kotlin")
+    main_activity_candidates = list(kotlin_root.rglob("MainActivity.kt"))
+    if not main_activity_candidates:
+        raise SystemExit(f"ERROR: no MainActivity.kt found under {kotlin_root}")
+    if len(main_activity_candidates) > 1:
+        raise SystemExit(f"ERROR: multiple MainActivity.kt found: {main_activity_candidates}")
+    old_main_activity = main_activity_candidates[0]
+
+    new_dir = kotlin_root / Path(PACKAGE_NAME.replace(".", "/"))
+    new_main_activity = new_dir / "MainActivity.kt"
+
+    text = old_main_activity.read_text()
+    text, count = re.subn(r'^package\s+[\w.]+', f'package {PACKAGE_NAME}', text, count=1, flags=re.MULTILINE)
+    if count != 1:
+        raise SystemExit(f"ERROR: could not find/replace package statement in {old_main_activity}")
+
+    new_dir.mkdir(parents=True, exist_ok=True)
+    new_main_activity.write_text(text)
+    print(f"OK: wrote {new_main_activity} with package {PACKAGE_NAME}")
+
+    if old_main_activity != new_main_activity:
+        old_main_activity.unlink()
+        # Clean up now-empty parent directories left behind (e.g. the old
+        # .../com/lawandlegal/laws_and_legals/ folder).
+        parent = old_main_activity.parent
+        while parent != kotlin_root and not any(parent.iterdir()):
+            empty_dir = parent
+            parent = parent.parent
+            empty_dir.rmdir()
+        print(f"OK: removed stale {old_main_activity}")
+
     # ---- Fix the generated smoke test (references a template class name
     # that doesn't exist in this project) ----
     test_file = Path("test/widget_test.dart")
