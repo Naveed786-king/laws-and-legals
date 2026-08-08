@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/theme/theme_controller.dart';
-import '../../../core/providers/core_providers.dart';
 import '../../pages/presentation/pages_list_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../notifications/application/notification_service.dart';

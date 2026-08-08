@@ -20,14 +20,14 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       drawer: const AppDrawer(),
-      appBar: Builder(
-        builder: (context) => AppBar(
-          leading: IconButton(
+      appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-          title: const Text('Laws And Legals'),
         ),
+        title: const Text('Laws And Legals'),
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(homeSectionsProvider),

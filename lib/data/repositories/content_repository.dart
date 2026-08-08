@@ -17,11 +17,10 @@ import '../../core/storage/content_cache_store.dart';
 /// launch with no connection). This means the app "goes live" automatically
 /// the moment real categories exist in Firestore - no manual toggle needed.
 class ContentRepository {
-  ContentRepository(this._configStore)
+  ContentRepository()
       : _firestore = FirestoreDataSource(),
         _cache = ContentCacheStore();
 
-  final ConfigStore _configStore; // kept for future WordPress-style config UI
   final FirestoreDataSource _firestore;
   final ContentCacheStore _cache;
 
