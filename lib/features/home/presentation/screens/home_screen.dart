@@ -50,6 +50,26 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           data: (sections) {
+            if (sections.isEmpty) {
+              return ListView(
+                padding: const EdgeInsets.all(24),
+                children: const [
+                  SizedBox(height: 80),
+                  Icon(Icons.article_outlined, size: 48),
+                  SizedBox(height: 12),
+                  Text(
+                    'No content yet',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Add categories, sections, and posts from the Admin Panel and they will appear here.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              );
+            }
             final blocks = <Widget>[
               for (final s in sections) _SectionBlock(section: s),
             ];
