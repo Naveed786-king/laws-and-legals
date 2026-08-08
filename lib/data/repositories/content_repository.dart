@@ -4,18 +4,16 @@ import '../../domain/entities/home_section.dart';
 import '../../domain/entities/banner_ad.dart';
 import '../../domain/entities/app_page.dart';
 import '../../domain/entities/youtube_video.dart';
-import '../datasources/demo_data_source.dart';
 import '../datasources/firestore_data_source.dart';
-import '../../core/storage/config_store.dart';
 import '../../core/storage/content_cache_store.dart';
 
 /// Single source of truth for all content in the app.
 ///
 /// Fallback chain for every read: Firestore (live, written by the Admin
-/// Panel) -> Hive cache (last successful live fetch, for offline reading)
-/// -> bundled demo content (fresh install with no live data yet, or first
-/// launch with no connection). This means the app "goes live" automatically
-/// the moment real categories exist in Firestore - no manual toggle needed.
+/// Panel) -> Hive cache (last successful live fetch, for offline reading).
+/// There is no bundled demo-content fallback - if nothing has been added
+/// in the Admin Panel yet, screens show their proper empty state instead
+/// (e.g. "No posts in this category yet") rather than sample content.
 class ContentRepository {
   ContentRepository()
       : _firestore = FirestoreDataSource(),
@@ -34,7 +32,7 @@ class ContentRepository {
     if (cached != null && cached.isNotEmpty) {
       return cached.map((m) => Category(id: m['id'], name: m['name'])).toList();
     }
-    return DemoDataSource.categories;
+    return [];
   }
 
   Future<List<HomeSection>> getHomeSections() async {
@@ -87,7 +85,7 @@ class ContentRepository {
       }).toList();
     }
 
-    return DemoDataSource.homeSections;
+    return [];
   }
 
   Future<List<Post>> getPostsByCategory(String categoryId) async {
@@ -102,7 +100,7 @@ class ContentRepository {
           .where((p) => p.categoryId == categoryId)
           .toList();
     }
-    return DemoDataSource.allPosts.where((p) => p.categoryId == categoryId).toList();
+    return [];
   }
 
   Future<Post?> getPostById(String id) async {
@@ -115,11 +113,7 @@ class ContentRepository {
         if (p.id == id) return p;
       }
     }
-    try {
-      return DemoDataSource.allPosts.firstWhere((p) => p.id == id);
-    } catch (_) {
-      return null;
-    }
+    return null;
   }
 
   Future<List<Post>> getRelatedPosts(Post post, {int limit = 4}) async {
@@ -131,35 +125,24 @@ class ContentRepository {
     if (query.trim().isEmpty) return [];
     final q = query.toLowerCase();
     final live = await _firestore.getPublishedPosts();
-    final source = live.isNotEmpty ? live : DemoDataSource.allPosts;
-    return source
+    return live
         .where((p) => p.title.toLowerCase().contains(q) || p.excerpt.toLowerCase().contains(q))
         .toList();
   }
 
   Future<List<BannerAd>> getBanners(String position) async {
-    final live = await _firestore.getBanners(position);
-    if (live.isNotEmpty) return live;
-    return DemoDataSource.banners.where((b) => b.position == position && b.isEnabled).toList();
+    return _firestore.getBanners(position);
   }
 
   Future<List<AppPage>> getPages() async {
-    final live = await _firestore.getPages();
-    if (live.isNotEmpty) return live;
-    return DemoDataSource.pages;
+    return _firestore.getPages();
   }
 
   Future<AppPage?> getPageBySlug(String slug) async {
-    final live = await _firestore.getPageBySlug(slug);
-    if (live != null) return live;
-    try {
-      return DemoDataSource.pages.firstWhere((p) => p.slug == slug);
-    } catch (_) {
-      return null;
-    }
+    return _firestore.getPageBySlug(slug);
   }
 
   Future<List<YoutubeVideo>> getYoutubeVideos() async {
-    return DemoDataSource.demoVideos;
+    return [];
   }
 }

@@ -16,6 +16,17 @@ export async function render(outlet, toast) {
   const posts = postsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   outlet.innerHTML = `
+    <div class="card" style="background:#FFF8E1;">
+      <h3>Quick Setup</h3>
+      <p style="color:#5C6066;">One click to add one sample published post to each existing category,
+      so the app has real content to show immediately. Written as placeholder text for you to edit -
+      not copied from anywhere. Skips any category that already has a post.</p>
+      <button class="btn-primary" id="seed-posts-btn" style="width:auto;" ${categories.length === 0 ? "disabled" : ""}>
+        Add One Sample Post Per Category
+      </button>
+      ${categories.length === 0 ? '<p style="color:#B3261E;font-size:13px;">Create categories first (Home Sections tab).</p>' : ""}
+    </div>
+
     <div class="row between">
       <h1>Posts</h1>
       <button class="btn-primary" id="new-post-btn" style="width:auto;">+ New Post</button>
@@ -41,6 +52,37 @@ export async function render(outlet, toast) {
     </div>
     <div class="card hidden" id="post-form-card"></div>
   `;
+
+  document.getElementById("seed-posts-btn").onclick = async () => {
+    try {
+      const categoriesWithPosts = new Set(posts.map((p) => p.categoryId));
+      let count = 0;
+      for (const cat of categories) {
+        if (categoriesWithPosts.has(cat.id)) continue;
+        const sampleTitle = `${cat.name} - सैंपल पोस्ट (इसे संपादित करें)`;
+        await addDoc(collection(db, "posts"), {
+          title: sampleTitle,
+          excerpt: "यह एक सैंपल पोस्ट है। इसे एडिट करके असली खबर डालें, या डिलीट करके नई पोस्ट बनाएं।",
+          content: `<p>यह ${cat.name} कैटेगरी के लिए एक सैंपल पोस्ट है, ताकि ऐप में यह कैटेगरी तुरंत दिखे। कृपया इसे एडिट पर टैप करके असली सामग्री से बदलें।</p>`,
+          blocks: [{ type: "paragraph", text: `यह ${cat.name} कैटेगरी के लिए एक सैंपल पोस्ट है, ताकि ऐप में यह कैटेगरी तुरंत दिखे। कृपया इसे एडिट पर टैप करके असली सामग्री से बदलें।` }],
+          author: "Admin",
+          categoryId: cat.id,
+          categoryName: cat.name,
+          status: "published",
+          imageUrl: "",
+          tags: [],
+          publishedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        count++;
+      }
+      toast(count > 0 ? `Added ${count} sample post(s)` : "Every category already has a post");
+      render(outlet, toast);
+    } catch (err) {
+      console.error(err);
+      alert("Could not add sample posts: " + (err && err.message ? err.message : err));
+    }
+  };
 
   document.getElementById("new-post-btn").onclick = () => showForm(null);
   outlet.querySelectorAll(".edit-btn").forEach((btn) => {

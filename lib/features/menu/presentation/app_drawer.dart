@@ -44,7 +44,10 @@ class AppDrawer extends StatelessWidget {
                     title: Text(item.label),
                     onTap: () {
                       Navigator.pop(context);
-                      if (item.type == 'page') {
+                      if (item.type == 'home') {
+                        // Already at Home when the drawer opens (only wired
+                        // in on HomeScreen); just close the drawer.
+                      } else if (item.type == 'page') {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => PageDetailScreen(slug: item.targetId)),
                         );

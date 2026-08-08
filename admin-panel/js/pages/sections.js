@@ -9,7 +9,21 @@ export async function render(outlet, toast) {
   const secSnap = await getDocs(query(collection(db, "homeSections"), orderBy("order")));
   const sections = secSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
+  const REFERENCE_CATEGORIES = [
+    "राष्ट्रीय", "लॉ एंड लीगल", "कानून", "बार व बेंच",
+    "आर्ट एंड जस्टिस", "लीगल सर्विस", "लीगल एज्यूकेशन", "परिचर्चा",
+  ];
+
   outlet.innerHTML = `
+    <div class="card" style="background:#FFF8E1;">
+      <h3>Quick Setup</h3>
+      <p style="color:#5C6066;">One click to create the standard category set
+      (राष्ट्रीय, लॉ एंड लीगल, कानून, बार व बेंच, आर्ट एंड जस्टिस, लीगल सर्विस,
+      लीगल एज्यूकेशन, परिचर्चा) plus a Home Section for each - only adds
+      categories that don't already exist by name.</p>
+      <button class="btn-primary" id="quick-setup-btn" style="width:auto;">Create Standard Categories + Sections</button>
+    </div>
+
     <h1>Categories</h1>
     <div class="card">
       <table>
@@ -61,6 +75,40 @@ export async function render(outlet, toast) {
   `;
 
   // ---- Categories ----
+  document.getElementById("quick-setup-btn").onclick = async () => {
+    try {
+      const existingNames = categories.map((c) => c.name);
+      let nextOrder = categories.length;
+      const createdIds = {};
+      for (const name of REFERENCE_CATEGORIES) {
+        if (existingNames.includes(name)) continue;
+        const ref = await addDoc(collection(db, "categories"), { name, order: nextOrder });
+        createdIds[name] = ref.id;
+        nextOrder++;
+      }
+      // Also create a Home Section for any newly created category that
+      // doesn't already have one.
+      const existingSectionCategoryIds = sections.map((s) => s.categoryId);
+      let sectionOrder = sections.length;
+      for (const [name, id] of Object.entries(createdIds)) {
+        if (existingSectionCategoryIds.includes(id)) continue;
+        await addDoc(collection(db, "homeSections"), {
+          title: name,
+          categoryId: id,
+          bannerPosition: "none",
+          order: sectionOrder,
+          isEnabled: true,
+        });
+        sectionOrder++;
+      }
+      toast("Standard categories and sections created");
+      render(outlet, toast);
+    } catch (err) {
+      console.error(err);
+      alert("Could not set up: " + (err && err.message ? err.message : err));
+    }
+  };
+
   document.getElementById("new-cat-btn").onclick = () => showCatForm(null);
   outlet.querySelectorAll(".edit-cat-btn").forEach((btn) => {
     btn.onclick = () => showCatForm(categories.find((c) => c.id === btn.dataset.id));
