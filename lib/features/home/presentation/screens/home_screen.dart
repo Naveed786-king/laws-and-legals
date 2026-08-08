@@ -8,6 +8,8 @@ import '../../../../domain/entities/home_section.dart';
 import '../../application/home_providers.dart';
 import '../../../post/presentation/post_detail_screen.dart';
 import '../../../categories/presentation/category_screen.dart';
+import '../../../menu/presentation/app_drawer.dart';
+import '../../../youtube/presentation/home_youtube_section.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -17,14 +19,15 @@ class HomeScreen extends ConsumerWidget {
     final sectionsAsync = ref.watch(homeSectionsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laws And Legals'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => Navigator.of(context).pushNamed('/search'),
+      drawer: const AppDrawer(),
+      appBar: Builder(
+        builder: (context) => AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-        ],
+          title: const Text('Laws And Legals'),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(homeSectionsProvider),
@@ -46,12 +49,19 @@ class HomeScreen extends ConsumerWidget {
                   textAlign: TextAlign.center),
             ],
           ),
-          data: (sections) => ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: sections.length,
-            itemBuilder: (context, index) =>
-                _SectionBlock(section: sections[index]),
-          ),
+          data: (sections) {
+            final blocks = <Widget>[
+              for (final s in sections) _SectionBlock(section: s),
+            ];
+            // Insert the YouTube section second-to-last, per requested layout.
+            final insertAt = blocks.isEmpty ? 0 : blocks.length - 1;
+            blocks.insert(insertAt, const HomeYoutubeSection());
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              itemCount: blocks.length,
+              itemBuilder: (context, index) => blocks[index],
+            );
+          },
         ),
       ),
     );

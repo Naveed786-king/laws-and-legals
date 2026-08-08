@@ -28,7 +28,7 @@ class AppTheme {
 
   static ThemeData light() {
     const scheme = ColorScheme.light(
-      primary: AppColors.primaryNavy,
+      primary: AppColors.primaryRed,
       secondary: AppColors.accentGold,
       tertiary: AppColors.accentMaroon,
       surface: AppColors.lightSurface,
@@ -41,7 +41,7 @@ class AppTheme {
       textTheme: _textTheme(
           AppColors.textPrimaryLight, AppColors.textSecondaryLight),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primaryNavy,
+        backgroundColor: AppColors.primaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
@@ -53,8 +53,8 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.primaryNavy.withOpacity(0.06),
-        labelStyle: const TextStyle(color: AppColors.primaryNavy, fontSize: 12),
+        backgroundColor: AppColors.primaryRed.withOpacity(0.06),
+        labelStyle: const TextStyle(color: AppColors.primaryRed, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
       ),
@@ -71,7 +71,7 @@ class AppTheme {
 
   static ThemeData dark() {
     const scheme = ColorScheme.dark(
-      primary: AppColors.accentGold,
+      primary: AppColors.primaryRedLight,
       secondary: AppColors.accentGold,
       tertiary: AppColors.accentMaroon,
       surface: AppColors.darkSurface,

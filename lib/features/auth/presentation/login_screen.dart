@@ -31,7 +31,7 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.balance, size: 64, color: AppColors.primaryNavy),
+              const Icon(Icons.balance, size: 64, color: AppColors.primaryRed),
               const SizedBox(height: 16),
               Text('Welcome', style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 8),

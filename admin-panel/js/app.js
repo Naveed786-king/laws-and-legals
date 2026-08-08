@@ -10,6 +10,9 @@ const routeLoaders = {
   banners: () => import("./pages/banners.js"),
   pages: () => import("./pages/pages-cms.js"),
   sections: () => import("./pages/sections.js"),
+  menu: () => import("./pages/menu.js"),
+  youtube: () => import("./pages/youtube.js"),
+  notifications: () => import("./pages/notifications.js"),
   theme: () => import("./pages/theme.js"),
   splash: () => import("./pages/splash.js"),
 };

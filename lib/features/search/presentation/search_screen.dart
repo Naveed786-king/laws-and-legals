@@ -38,53 +38,83 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
   }
 
+  void _clear() {
+    _controller.clear();
+    setState(() => _results = null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final recentAsync = ref.watch(recentSearchesProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _controller,
-          autofocus: false,
-          decoration: const InputDecoration(
-            hintText: 'Search articles...',
-            border: InputBorder.none,
+      appBar: AppBar(title: const Text('Search')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: TextField(
+                controller: _controller,
+                autofocus: false,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: 'लेख खोजें... (Search articles)',
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _controller.text.isNotEmpty
+                      ? IconButton(icon: const Icon(Icons.close), onPressed: _clear)
+                      : null,
+                ),
+                onChanged: (_) => setState(() {}),
+                onSubmitted: _runSearch,
+              ),
+            ),
           ),
-          style: const TextStyle(color: Colors.white),
-          onSubmitted: _runSearch,
-        ),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _results == null
-              ? _SearchLanding(
-                  recentAsync: recentAsync,
-                  onTapTerm: (term) {
-                    _controller.text = term;
-                    _runSearch(term);
-                  },
-                  onClearHistory: () async {
-                    await ref.read(searchHistoryStoreProvider).clear();
-                    ref.invalidate(recentSearchesProvider);
-                  },
-                )
-              : _results!.isEmpty
-                  ? const EmptyState(icon: Icons.search_off, title: 'No results found')
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _results!.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, i) {
-                        final post = _results![i];
-                        return CompactPostCard(
-                          post: post,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => PostDetailScreen(postId: post.id)),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _results == null
+                    ? _SearchLanding(
+                        recentAsync: recentAsync,
+                        onTapTerm: (term) {
+                          _controller.text = term;
+                          _runSearch(term);
+                        },
+                        onClearHistory: () async {
+                          await ref.read(searchHistoryStoreProvider).clear();
+                          ref.invalidate(recentSearchesProvider);
+                        },
+                      )
+                    : _results!.isEmpty
+                        ? const EmptyState(
+                            icon: Icons.search_off,
+                            title: 'No results found',
+                            subtitle: 'Try a different keyword or check the spelling.',
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _results!.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, i) {
+                              final post = _results![i];
+                              return CompactPostCard(
+                                post: post,
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => PostDetailScreen(postId: post.id)),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -102,7 +132,7 @@ class _SearchLanding extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       children: [
         recentAsync.when(
           data: (recent) => recent.isEmpty
@@ -117,14 +147,19 @@ class _SearchLanding extends StatelessWidget {
                         TextButton(onPressed: onClearHistory, child: const Text('Clear')),
                       ],
                     ),
+                    const SizedBox(height: 4),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: recent
-                          .map((t) => ActionChip(label: Text(t), onPressed: () => onTapTerm(t)))
+                          .map((t) => ActionChip(
+                                avatar: const Icon(Icons.history, size: 16),
+                                label: Text(t),
+                                onPressed: () => onTapTerm(t),
+                              ))
                           .toList(),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                   ],
                 ),
           loading: () => const SizedBox.shrink(),
@@ -136,7 +171,11 @@ class _SearchLanding extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: SearchHistoryStore.trending
-              .map((t) => ActionChip(label: Text(t), onPressed: () => onTapTerm(t)))
+              .map((t) => ActionChip(
+                    avatar: const Icon(Icons.trending_up, size: 16),
+                    label: Text(t),
+                    onPressed: () => onTapTerm(t),
+                  ))
               .toList(),
         ),
       ],
