@@ -107,6 +107,9 @@ Downloading packages...
   dbus 0.7.12 (0.7.14 available)
   fake_async 1.3.1 (1.3.3 available)
   ffi 2.1.3 (2.2.0 available)
+  firebase_auth 5.7.0 (6.5.7 available)
+  firebase_auth_platform_interface 7.7.3 (9.0.6 available)
+  firebase_auth_web 5.15.3 (6.2.6 available)
   firebase_core 3.15.2 (4.13.0 available)
   firebase_core_platform_interface 6.0.3 (8.1.0 available)
   firebase_core_web 2.24.1 (3.10.0 available)
@@ -121,6 +124,11 @@ Downloading packages...
   flutter_riverpod 2.6.1 (3.4.2 available)
   flutter_svg 2.1.0 (2.3.0 available)
   google_fonts 6.3.0 (8.2.1 available)
+  google_sign_in 6.2.2 (7.2.0 available)
+  google_sign_in_android 6.1.35 (7.2.16 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
   http_parser 4.0.2 (4.1.2 available)
   intl 0.19.0 (0.20.3 available)
   leak_tracker 10.0.5 (11.0.2 available)
@@ -173,21 +181,18 @@ Downloading packages...
   win32 5.10.1 (6.4.0 available)
   xml 6.5.0 (7.0.1 available)
 Got dependencies!
-80 packages have newer versions incompatible with dependency constraints.
+88 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 + flutter analyze --no-fatal-infos --no-fatal-warnings
 Analyzing laws-and-legals...                                    
 
-warning • The value of the field '_configStore' isn't used • lib/data/repositories/content_repository.dart:24:21 • unused_field
-  error • The argument type 'Builder' can't be assigned to the parameter type 'PreferredSizeWidget?'.  • lib/features/home/presentation/screens/home_screen.dart:23:15 • argument_type_not_assignable
+warning • The value of the local variable 'theme' isn't used • lib/features/categories/presentation/category_screen.dart:28:11 • unused_local_variable
    info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/home/presentation/screens/home_screen.dart:44:23 • prefer_const_literals_to_create_immutables
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:105:13 • prefer_const_constructors
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:113:13 • prefer_const_constructors
-warning • Unused import: '../../../core/providers/core_providers.dart' • lib/features/settings/presentation/settings_screen.dart:5:8 • unused_import
+   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:125:13 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:133:13 • prefer_const_constructors
    info • Use 'const' with the constructor to improve performance • lib/features/youtube/presentation/youtube_screen.dart:48:37 • prefer_const_constructors
 
-7 issues found. (ran in 14.5s)
-+ true
+5 issues found. (ran in 15.9s)
 + flutter build apk --debug
 
 Running Gradle task 'assembleDebug'...                          
@@ -198,19 +203,20 @@ Preparing "Install Android SDK Build-Tools 33.0.1 v.33.0.1".
 Installing Android SDK Build-Tools 33.0.1 in /usr/local/lib/android/sdk/build-tools/33.0.1
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" complete.
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" finished.
-lib/features/home/presentation/screens/home_screen.dart:23:15: Error: The argument type 'Builder' can't be assigned to the parameter type 'PreferredSizeWidget?'.
- - 'Builder' is from 'package:flutter/src/widgets/basic.dart' ('/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/packages/flutter/lib/src/widgets/basic.dart').
- - 'PreferredSizeWidget' is from 'package:flutter/src/widgets/preferred_size.dart' ('/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/packages/flutter/lib/src/widgets/preferred_size.dart').
-      appBar: Builder(
-              ^
-Target kernel_snapshot_program failed: Exception
-
+/home/runner/work/laws-and-legals/laws-and-legals/android/app/src/debug/AndroidManifest.xml Error:
+	uses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [com.google.firebase:firebase-auth:23.2.1] /home/runner/.gradle/caches/transforms-3/af7b9c66742d1d933e1241c81dbe5bae/transformed/jetified-firebase-auth-23.2.1/AndroidManifest.xml as the library might be using APIs not available in 21
+	Suggestion: use a compatible library with a minSdk of at most 21,
+		or increase this project's minSdk version to at least 23,
+		or use tools:overrideLibrary="com.google.firebase.auth" to force usage (may lead to runtime failures)
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:compileFlutterBuildDebug'.
-> Process 'command '/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/bin/flutter'' finished with non-zero exit value 1
+Execution failed for task ':app:processDebugMainManifest'.
+> Manifest merger failed : uses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [com.google.firebase:firebase-auth:23.2.1] /home/runner/.gradle/caches/transforms-3/af7b9c66742d1d933e1241c81dbe5bae/transformed/jetified-firebase-auth-23.2.1/AndroidManifest.xml as the library might be using APIs not available in 21
+  	Suggestion: use a compatible library with a minSdk of at most 21,
+  		or increase this project's minSdk version to at least 23,
+  		or use tools:overrideLibrary="com.google.firebase.auth" to force usage (may lead to runtime failures)
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -218,6 +224,6 @@ Execution failed for task ':app:compileFlutterBuildDebug'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 2m 34s
-Running Gradle task 'assembleDebug'...                            154.9s
+BUILD FAILED in 2m 39s
+Running Gradle task 'assembleDebug'...                            160.4s
 Gradle task assembleDebug failed with exit code 1
