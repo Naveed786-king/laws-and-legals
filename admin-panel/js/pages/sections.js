@@ -204,6 +204,8 @@ export async function render(outlet, toast) {
       </select>
       <label class="field-label">Order (controls position on home page)</label>
       <input type="number" id="s-order" value="${sec ? sec.order : sections.length}" />
+      <label class="field-label">Posts to show in this section</label>
+      <input type="number" id="s-limit" value="${sec ? (sec.postsLimit || 5) : 5}" min="1" max="20" />
       <label class="field-label"><input type="checkbox" id="s-enabled" ${!sec || sec.isEnabled ? "checked" : ""} style="width:auto;display:inline;"/> Enabled</label>
       <button class="btn-primary" id="save-sec-btn" style="width:auto;">Save</button>
     `;
@@ -216,6 +218,7 @@ export async function render(outlet, toast) {
           categoryId,
           bannerPosition: document.getElementById("s-banner").value,
           order: Number(document.getElementById("s-order").value) || 0,
+          postsLimit: Number(document.getElementById("s-limit").value) || 5,
           isEnabled: document.getElementById("s-enabled").checked,
         };
         if (sec) await updateDoc(doc(db, "homeSections", sec.id), payload);

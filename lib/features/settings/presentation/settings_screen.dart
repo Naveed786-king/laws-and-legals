@@ -5,6 +5,7 @@ import '../../../core/theme/theme_controller.dart';
 import '../../pages/presentation/pages_list_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../notifications/application/notification_service.dart';
+import '../../menu/presentation/app_drawer.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -14,7 +15,11 @@ class SettingsScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        title: const Text('Settings'),
+      ),
       body: ListView(
         children: [
           const _SectionLabel('Appearance'),
@@ -77,13 +82,6 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const Divider(),
-          const _SectionLabel('Developer'),
-          SwitchListTile(
-            title: const Text('Developer Mode'),
-            subtitle: const Text('Show extra diagnostic info'),
-            value: false,
-            onChanged: (_) {},
-          ),
           const _AppVersionTile(),
           const SizedBox(height: 24),
         ],

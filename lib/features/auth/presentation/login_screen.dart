@@ -1,36 +1,70 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../application/auth_service.dart';
 
-/// Optional login. Google and Email sign-in are visibly present but
-/// disabled until Firebase Auth is configured in Settings - tapping them
-/// explains why instead of silently doing nothing. Skip always works and
-/// unlocks the full app (Home, Categories, Bookmarks, Search, Offline
-/// Reading, Notifications-after-permission) with no account required.
-class LoginScreen extends StatelessWidget {
+/// Optional login: Email/Password and Google sign-in are both real and
+/// functional. Skip always works and unlocks the full app - no account
+/// required. Signing in matters for future cloud-synced bookmarks.
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  void _openApp(BuildContext context) {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _showEmailForm = false;
+  bool _isSignUp = false;
+  bool _loading = false;
+  String? _error;
+
+  void _openApp() {
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const AppShell()),
     );
   }
 
-  void _notConfigured(BuildContext context, String provider) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$provider sign-in isn\'t configured yet. Use Skip for now.')),
-    );
+  Future<void> _submitEmail() async {
+    setState(() { _loading = true; _error = null; });
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final error = _isSignUp
+        ? await AuthService.signUpWithEmail(email, password)
+        : await AuthService.signInWithEmail(email, password);
+    if (!mounted) return;
+    setState(() { _loading = false; _error = error; });
+    if (error == null) _openApp();
+  }
+
+  Future<void> _submitGoogle() async {
+    setState(() { _loading = true; _error = null; });
+    final error = await AuthService.signInWithGoogle();
+    if (!mounted) return;
+    setState(() { _loading = false; _error = error; });
+    if (error == null) _openApp();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 40),
               const Icon(Icons.balance, size: 64, color: AppColors.primaryRed),
               const SizedBox(height: 16),
               Text('Welcome', style: Theme.of(context).textTheme.headlineMedium),
@@ -41,22 +75,57 @@ class LoginScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.g_mobiledata, size: 28),
-                label: const Text('Continue with Google'),
-                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                onPressed: () => _notConfigured(context, 'Google'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.email_outlined),
-                label: const Text('Continue with Email'),
-                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                onPressed: () => _notConfigured(context, 'Email'),
-              ),
+              if (_showEmailForm) ...[
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_error!, style: const TextStyle(color: AppColors.error)),
+                ],
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _loading ? null : _submitEmail,
+                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                  child: _loading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : Text(_isSignUp ? 'Create Account' : 'Sign In'),
+                ),
+                TextButton(
+                  onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                  child: Text(_isSignUp ? 'Already have an account? Sign In' : 'New here? Create an account'),
+                ),
+                const SizedBox(height: 8),
+              ] else ...[
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.g_mobiledata, size: 28),
+                  label: const Text('Continue with Google'),
+                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                  onPressed: _loading ? null : _submitGoogle,
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.email_outlined),
+                  label: const Text('Continue with Email'),
+                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                  onPressed: () => setState(() => _showEmailForm = true),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_error!, style: const TextStyle(color: AppColors.error), textAlign: TextAlign.center),
+                ],
+              ],
               const SizedBox(height: 24),
               TextButton(
-                onPressed: () => _openApp(context),
+                onPressed: _openApp,
                 child: const Text('Skip for now'),
               ),
             ],

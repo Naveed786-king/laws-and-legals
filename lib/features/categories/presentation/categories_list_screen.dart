@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/core_providers.dart';
 import 'category_screen.dart';
+import '../../menu/presentation/app_drawer.dart';
 
 final categoriesListProvider = FutureProvider((ref) {
   return ref.watch(contentRepositoryProvider).getCategories();
@@ -14,7 +15,11 @@ class CategoriesListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        title: const Text('Categories'),
+      ),
       body: categoriesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => const Center(child: Text('Could not load categories')),

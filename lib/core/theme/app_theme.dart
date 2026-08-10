@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'dynamic_theme_provider.dart';
 
 /// Builds Material 3 ThemeData for light and dark modes.
 /// Typography uses Noto Sans Devanagari fallback so Hindi text renders
-/// natively alongside the Latin UI chrome.
+/// natively alongside the Latin UI chrome. Accepts optional color overrides
+/// from [DynamicThemeColors] (Admin Panel > Theme & Colors) - any field left
+/// null falls back to the built-in default palette.
 class AppTheme {
   AppTheme._();
 
@@ -26,22 +29,27 @@ class AppTheme {
     );
   }
 
-  static ThemeData light() {
-    const scheme = ColorScheme.light(
-      primary: AppColors.primaryRed,
-      secondary: AppColors.accentGold,
-      tertiary: AppColors.accentMaroon,
+  static ThemeData light([DynamicThemeColors? overrides]) {
+    final primary = overrides?.primary ?? AppColors.primaryRed;
+    final secondary = overrides?.secondary ?? AppColors.accentGold;
+    final tertiary = overrides?.tertiary ?? AppColors.accentMaroon;
+    final background = overrides?.background ?? AppColors.lightBackground;
+
+    final scheme = ColorScheme.light(
+      primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
       surface: AppColors.lightSurface,
       error: AppColors.error,
     );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.lightBackground,
+      scaffoldBackgroundColor: background,
       textTheme: _textTheme(
           AppColors.textPrimaryLight, AppColors.textSecondaryLight),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primaryRed,
+      appBarTheme: AppBarTheme(
+        backgroundColor: primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
@@ -53,14 +61,14 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.primaryRed.withOpacity(0.06),
-        labelStyle: const TextStyle(color: AppColors.primaryRed, fontSize: 12),
+        backgroundColor: primary.withOpacity(0.06),
+        labelStyle: TextStyle(color: primary, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.lightSurface,
-        indicatorColor: AppColors.accentGold.withOpacity(0.25),
+        indicatorColor: secondary.withOpacity(0.25),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
@@ -69,11 +77,15 @@ class AppTheme {
     );
   }
 
-  static ThemeData dark() {
-    const scheme = ColorScheme.dark(
-      primary: AppColors.primaryRedLight,
-      secondary: AppColors.accentGold,
-      tertiary: AppColors.accentMaroon,
+  static ThemeData dark([DynamicThemeColors? overrides]) {
+    final primary = overrides?.primary ?? AppColors.primaryRedLight;
+    final secondary = overrides?.secondary ?? AppColors.accentGold;
+    final tertiary = overrides?.tertiary ?? AppColors.accentMaroon;
+
+    final scheme = ColorScheme.dark(
+      primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
       surface: AppColors.darkSurface,
       error: AppColors.error,
     );
@@ -96,14 +108,14 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.accentGold.withOpacity(0.12),
-        labelStyle: const TextStyle(color: AppColors.accentGold, fontSize: 12),
+        backgroundColor: secondary.withOpacity(0.12),
+        labelStyle: TextStyle(color: secondary, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.darkSurface,
-        indicatorColor: AppColors.accentGold.withOpacity(0.25),
+        indicatorColor: secondary.withOpacity(0.25),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),

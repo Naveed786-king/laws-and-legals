@@ -46,17 +46,19 @@ class ContentRepository {
         final categoryId = cfg['categoryId'] as String? ?? '';
         final posts = allPosts.where((p) => p.categoryId == categoryId).toList();
         if (posts.isEmpty) continue;
+        final limit = (cfg['postsLimit'] ?? 5) as int;
         sections.add(HomeSection(
           id: cfg['id'] as String,
           title: cfg['title'] as String? ?? '',
           categoryId: categoryId,
-          posts: posts,
+          posts: posts.take(limit).toList(),
           bannerPosition: switch (cfg['bannerPosition']) {
             'above' => BannerPosition.above,
             'below' => BannerPosition.below,
             _ => BannerPosition.none,
           },
           order: (cfg['order'] ?? 0) as int,
+          postsLimit: limit,
         ));
       }
       if (sections.isNotEmpty) {

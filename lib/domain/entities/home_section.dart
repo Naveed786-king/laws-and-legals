@@ -9,6 +9,7 @@ class HomeSection {
   final List<Post> posts;
   final BannerPosition bannerPosition;
   final int order;
+  final int postsLimit;
 
   const HomeSection({
     required this.id,
@@ -17,5 +18,6 @@ class HomeSection {
     required this.posts,
     this.bannerPosition = BannerPosition.none,
     required this.order,
+    this.postsLimit = 5,
   });
 }

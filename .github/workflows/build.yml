@@ -43,6 +43,11 @@ jobs:
           } > build-log.txt 2>&1
         continue-on-error: true
 
+      - name: Print debug keystore SHA-1 (for Google Sign-In setup)
+        if: always()
+        run: |
+          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>&1 | grep -A1 "SHA1:" || echo "Could not read debug keystore"
+
       - name: Prepare log tail
         if: always()
         run: |

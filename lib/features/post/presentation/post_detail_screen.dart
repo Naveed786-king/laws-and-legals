@@ -96,19 +96,22 @@ class _PostBody extends ConsumerWidget {
               const SizedBox(height: 24),
               const _PostBannerSlot(position: 'post_bottom'),
               const SizedBox(height: 28),
-              Text('Related', style: theme.textTheme.titleLarge),
-              const SizedBox(height: 8),
               relatedAsync.when(
-                data: (related) => Column(
-                  children: related
-                      .map((r) => CompactPostCard(
-                            post: r,
-                            onTap: () => Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (_) => PostDetailScreen(postId: r.id)),
-                            ),
-                          ))
-                      .toList(),
-                ),
+                data: (related) => related.isEmpty
+                    ? const SizedBox.shrink()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Related', style: theme.textTheme.titleLarge),
+                          const SizedBox(height: 8),
+                          ...related.map((r) => CompactPostCard(
+                                post: r,
+                                onTap: () => Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (_) => PostDetailScreen(postId: r.id)),
+                                ),
+                              )),
+                        ],
+                      ),
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
               ),

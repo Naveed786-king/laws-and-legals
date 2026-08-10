@@ -162,6 +162,15 @@ export async function render(outlet, toast) {
           payload.publishedAt = serverTimestamp();
           payload.tags = [];
           await addDoc(collection(db, "posts"), payload);
+          // Notify anyone with the app open right now, only for genuinely
+          // new posts (not edits) that are published immediately.
+          if (payload.status === "published") {
+            await addDoc(collection(db, "notifications"), {
+              title: "नई खबर",
+              body: payload.title,
+              createdAt: serverTimestamp(),
+            });
+          }
         }
         toast("Post saved");
         render(outlet, toast);

@@ -4,6 +4,7 @@ import '../../../core/providers/core_providers.dart';
 import '../../../core/widgets/post_card.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../post/presentation/post_detail_screen.dart';
+import '../../menu/presentation/app_drawer.dart';
 
 final bookmarksListProvider = FutureProvider((ref) {
   return ref.watch(bookmarkStoreProvider).getAll();
@@ -16,7 +17,11 @@ class BookmarksScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarksAsync = ref.watch(bookmarksListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bookmarks')),
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        title: const Text('Bookmarks'),
+      ),
       body: bookmarksAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) => const Center(child: Text('Could not load bookmarks')),

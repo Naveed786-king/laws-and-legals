@@ -5,6 +5,7 @@ import '../../../core/widgets/post_card.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/storage/search_history_store.dart';
 import '../../post/presentation/post_detail_screen.dart';
+import '../../menu/presentation/app_drawer.dart';
 
 final recentSearchesProvider = FutureProvider((ref) {
   return ref.watch(searchHistoryStoreProvider).getRecent();
@@ -49,7 +50,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Search')),
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        title: const Text('Search'),
+      ),
       body: Column(
         children: [
           Padding(

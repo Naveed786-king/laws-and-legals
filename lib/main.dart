@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/theme/dynamic_theme_provider.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
 Future<void> main() async {
@@ -24,11 +25,14 @@ class LawsAndLegalsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeControllerProvider);
+    final dynamicColorsAsync = ref.watch(dynamicThemeProvider);
+    final dynamicColors = dynamicColorsAsync.valueOrNull;
+
     return MaterialApp(
       title: 'Laws And Legals',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(dynamicColors),
+      darkTheme: AppTheme.dark(dynamicColors),
       themeMode: themeMode,
       home: const SplashScreen(),
     );
