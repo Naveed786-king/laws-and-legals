@@ -83,6 +83,18 @@ def main():
         "namespace",
     )
 
+    # ---- minSdk ----
+    # firebase_auth's native Android library requires minSdkVersion 23 (the
+    # Flutter template defaults to flutter.minSdkVersion, currently 21).
+    # Override it directly to a fixed value so this doesn't silently break
+    # again if the Flutter template's default ever changes.
+    replace_exactly_one(
+        app_gradle,
+        r'minSdk\s*=?\s*flutter\.minSdkVersion',
+        'minSdk = 23' if is_kts else 'minSdk 23',
+        "minSdk override",
+    )
+
     # ---- app label ----
     if manifest.is_file():
         text = manifest.read_text()
