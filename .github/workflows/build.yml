@@ -46,7 +46,13 @@ jobs:
       - name: Print debug keystore SHA-1 (for Google Sign-In setup)
         if: always()
         run: |
-          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>&1 | grep -A1 "SHA1:" || echo "Could not read debug keystore"
+          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android > debug-keystore-info.txt 2>&1 || echo "Could not read debug keystore" > debug-keystore-info.txt
+          cat debug-keystore-info.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f debug-keystore-info.txt
+          git commit -m "CI: update debug keystore SHA-1 info [skip ci]" || true
+          git push origin HEAD:main || true
 
       - name: Prepare log tail
         if: always()
