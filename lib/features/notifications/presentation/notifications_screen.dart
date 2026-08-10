@@ -25,13 +25,24 @@ class NotificationsScreen extends StatelessWidget {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final n = notifications[i];
-              return ListTile(
-                leading: const Icon(Icons.notifications_none),
-                title: Text(n.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(n.body),
-                trailing: Text(
-                  DateFormat.MMMd().add_jm().format(n.createdAt),
-                  style: Theme.of(context).textTheme.bodySmall,
+              return Dismissible(
+                key: ValueKey(n.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16),
+                  color: Theme.of(context).colorScheme.error,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) => NotificationService.deleteNotification(n.id),
+                child: ListTile(
+                  leading: const Icon(Icons.notifications_none),
+                  title: Text(n.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(n.body),
+                  trailing: Text(
+                    DateFormat.MMMd().add_jm().format(n.createdAt),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               );
             },

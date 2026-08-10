@@ -42,6 +42,7 @@ class _AppShellState extends State<AppShell> {
       }
       if (latest.id != _lastSeenNotificationId) {
         _lastSeenNotificationId = latest.id;
+        NotificationService.showLocalNotification(latest);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -99,7 +99,7 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           name: Laws And Legals build ${{ github.run_number }}
-          body: "Automatic Demo Mode build from commit ${{ github.sha }}. Download the APK to install directly (no zip extraction needed). AAB is for future Play Store upload."
+          body: "Laws And Legals app - tap LawsAndLegals-debug.apk below to download and install directly on your Android phone (no zip extraction needed)."
           files: release-out/*
           make_latest: true
         env:

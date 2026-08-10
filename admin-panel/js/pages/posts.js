@@ -43,6 +43,7 @@ export async function render(outlet, toast) {
               <td><span class="status-pill status-${p.status || 'draft'}">${p.status || 'draft'}</span></td>
               <td>
                 <button class="btn-secondary edit-btn" data-id="${p.id}">Edit</button>
+                <button class="btn-secondary duplicate-btn" data-id="${p.id}">Duplicate</button>
                 <button class="btn-danger delete-btn" data-id="${p.id}">Delete</button>
               </td>
             </tr>
@@ -86,7 +87,20 @@ export async function render(outlet, toast) {
 
   document.getElementById("new-post-btn").onclick = () => showForm(null);
   outlet.querySelectorAll(".edit-btn").forEach((btn) => {
-    btn.onclick = () => showForm(posts.find((p) => p.id === btn.dataset.id));
+    btn.onclick = () => {
+      showForm(posts.find((p) => p.id === btn.dataset.id));
+      document.getElementById("post-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  });
+  outlet.querySelectorAll(".duplicate-btn").forEach((btn) => {
+    btn.onclick = () => {
+      const original = posts.find((p) => p.id === btn.dataset.id);
+      if (!original) return;
+      const copy = { ...original, title: original.title + " (Copy)", status: "draft" };
+      delete copy.id;
+      showForm(copy);
+      document.getElementById("post-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
   });
   outlet.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.onclick = async () => {

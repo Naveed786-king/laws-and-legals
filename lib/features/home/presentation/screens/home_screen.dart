@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/widgets/post_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/banner_widget.dart';
@@ -11,12 +13,23 @@ import '../../../categories/presentation/category_screen.dart';
 import '../../../menu/presentation/app_drawer.dart';
 import '../../../youtube/presentation/home_youtube_section.dart';
 
+final appLogoUrlProvider = FutureProvider<String?>((ref) async {
+  try {
+    final doc = await FirebaseFirestore.instance.collection('splash').doc('config').get();
+    final url = doc.data()?['logoUrl'] as String?;
+    return (url != null && url.isNotEmpty) ? url : null;
+  } catch (_) {
+    return null;
+  }
+});
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sectionsAsync = ref.watch(homeSectionsProvider);
+    final logoUrlAsync = ref.watch(appLogoUrlProvider);
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -28,6 +41,27 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         title: const Text('Laws And Legals'),
+        actions: [
+          logoUrlAsync.when(
+            data: (url) => url == null
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: CachedNetworkImage(
+                        imageUrl: url,
+                        width: 36,
+                        height: 36,
+                        fit: BoxFit.contain,
+                        errorWidget: (c, _, __) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(homeSectionsProvider),

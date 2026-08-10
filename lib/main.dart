@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/theme/dynamic_theme_provider.dart';
+import 'features/notifications/application/notification_service.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
 Future<void> main() async {
@@ -12,6 +13,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   try {
     await Firebase.initializeApp();
+    await NotificationService.init();
   } catch (_) {
     // Firebase not reachable (e.g. no network on first launch) - the app
     // still works fully offline via Hive-cached/demo content.

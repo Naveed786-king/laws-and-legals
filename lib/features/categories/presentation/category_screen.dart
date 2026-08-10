@@ -6,7 +6,6 @@ import '../../../core/providers/core_providers.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/banner_widget.dart';
 import '../../post/presentation/post_detail_screen.dart';
-import '../../menu/presentation/app_drawer.dart';
 
 final postsByCategoryProvider =
     FutureProvider.family((ref, String categoryId) {
@@ -28,9 +27,10 @@ class CategoryScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      drawer: const AppDrawer(),
+      // No drawer/menu icon here - this is a pushed detail screen reached
+      // from Home/Categories/the drawer, so it keeps Flutter's automatic
+      // back arrow instead of overriding it.
       appBar: AppBar(
-        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
         title: Text(categoryName),
       ),
       body: postsAsync.when(
