@@ -78,6 +78,7 @@ Your application code is in ./lib/main.dart.
 + python3 scripts/patch_android.py
 OK: patched applicationId in android/app/build.gradle
 OK: patched namespace in android/app/build.gradle
+OK: patched minSdk override in android/app/build.gradle
 OK: patched app label in android/app/src/main/AndroidManifest.xml
 OK: copied google-services.json
 OK: inserted google-services plugin (settings) into android/settings.gradle
@@ -121,6 +122,9 @@ Downloading packages...
   firebase_storage_web 3.10.17 (3.11.12 available)
   flutter_cache_manager 3.4.1 (3.4.2 available)
   flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 18.0.1 (22.3.0 available)
+  flutter_local_notifications_linux 5.0.0 (8.0.1 available)
+  flutter_local_notifications_platform_interface 8.0.0 (12.2.0 available)
   flutter_riverpod 2.6.1 (3.4.2 available)
   flutter_svg 2.1.0 (2.3.0 available)
   google_fonts 6.3.0 (8.2.1 available)
@@ -136,7 +140,7 @@ Downloading packages...
   leak_tracker_testing 3.0.1 (3.0.2 available)
   lints 4.0.0 (6.1.0 available)
   matcher 0.12.16+1 (0.12.20 available)
-  material_color_utilities 0.11.1 (0.13.0 available)
+  material_color_utilities 0.11.1 (0.13.1 available)
   meta 1.15.0 (1.19.0 available)
   package_info_plus 8.3.1 (10.2.1 available)
   package_info_plus_platform_interface 3.2.1 (4.1.0 available)
@@ -167,6 +171,7 @@ Downloading packages...
   synchronized 3.3.0+3 (3.4.1+1 available)
   term_glyph 1.2.1 (1.2.2 available)
   test_api 0.7.2 (0.7.13 available)
+  timezone 0.10.1 (0.11.1 available)
   url_launcher 6.3.1 (6.3.2 available)
   url_launcher_android 6.3.14 (6.3.32 available)
   url_launcher_ios 6.3.3 (6.4.1 available)
@@ -181,18 +186,25 @@ Downloading packages...
   win32 5.10.1 (6.4.0 available)
   xml 6.5.0 (7.0.1 available)
 Got dependencies!
-88 packages have newer versions incompatible with dependency constraints.
+92 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 + flutter analyze --no-fatal-infos --no-fatal-warnings
 Analyzing laws-and-legals...                                    
 
-warning • The value of the local variable 'theme' isn't used • lib/features/categories/presentation/category_screen.dart:28:11 • unused_local_variable
-   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/home/presentation/screens/home_screen.dart:44:23 • prefer_const_literals_to_create_immutables
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:125:13 • prefer_const_constructors
-   info • Use 'const' with the constructor to improve performance • lib/features/home/presentation/screens/home_screen.dart:133:13 • prefer_const_constructors
+warning • Dead code • lib/data/datasources/firestore_data_source.dart:122:3 • dead_code
+   info • The declaration 'getPages' isn't referenced • lib/data/datasources/firestore_data_source.dart:122:25 • unused_element
+   info • The declaration 'getPageBySlug' isn't referenced • lib/data/datasources/firestore_data_source.dart:138:20 • unused_element
+   info • The declaration 'getHomeSectionConfigs' isn't referenced • lib/data/datasources/firestore_data_source.dart:151:38 • unused_element
+  error • Expected to find '}' • lib/data/datasources/firestore_data_source.dart:163:1 • expected_token
+  error • The method 'getHomeSectionConfigs' isn't defined for the type 'FirestoreDataSource' • lib/data/repositories/content_repository.dart:42:47 • undefined_method
+  error • The method 'getPages' isn't defined for the type 'FirestoreDataSource' • lib/data/repositories/content_repository.dart:145:23 • undefined_method
+  error • The method 'getPageBySlug' isn't defined for the type 'FirestoreDataSource' • lib/data/repositories/content_repository.dart:149:23 • undefined_method
+warning • The value of the local variable 'theme' isn't used • lib/features/categories/presentation/category_screen.dart:27:11 • unused_local_variable
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/home/presentation/screens/home_screen.dart:78:23 • prefer_const_literals_to_create_immutables
    info • Use 'const' with the constructor to improve performance • lib/features/youtube/presentation/youtube_screen.dart:48:37 • prefer_const_constructors
 
-5 issues found. (ran in 15.9s)
+11 issues found. (ran in 15.7s)
++ true
 + flutter build apk --debug
 
 Running Gradle task 'assembleDebug'...                          
@@ -203,20 +215,32 @@ Preparing "Install Android SDK Build-Tools 33.0.1 v.33.0.1".
 Installing Android SDK Build-Tools 33.0.1 in /usr/local/lib/android/sdk/build-tools/33.0.1
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" complete.
 "Install Android SDK Build-Tools 33.0.1 v.33.0.1" finished.
-/home/runner/work/laws-and-legals/laws-and-legals/android/app/src/debug/AndroidManifest.xml Error:
-	uses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [com.google.firebase:firebase-auth:23.2.1] /home/runner/.gradle/caches/transforms-3/af7b9c66742d1d933e1241c81dbe5bae/transformed/jetified-firebase-auth-23.2.1/AndroidManifest.xml as the library might be using APIs not available in 21
-	Suggestion: use a compatible library with a minSdk of at most 21,
-		or increase this project's minSdk version to at least 23,
-		or use tools:overrideLibrary="com.google.firebase.auth" to force usage (may lead to runtime failures)
+lib/data/datasources/firestore_data_source.dart:11:27: Error: Can't find '}' to match '{'.
+class FirestoreDataSource {
+                          ^
+lib/data/repositories/content_repository.dart:42:47: Error: The method 'getHomeSectionConfigs' isn't defined for the class 'FirestoreDataSource'.
+ - 'FirestoreDataSource' is from 'package:laws_and_legals/data/datasources/firestore_data_source.dart' ('lib/data/datasources/firestore_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'getHomeSectionConfigs'.
+      final sectionConfigs = await _firestore.getHomeSectionConfigs();
+                                              ^^^^^^^^^^^^^^^^^^^^^
+lib/data/repositories/content_repository.dart:145:23: Error: The method 'getPages' isn't defined for the class 'FirestoreDataSource'.
+ - 'FirestoreDataSource' is from 'package:laws_and_legals/data/datasources/firestore_data_source.dart' ('lib/data/datasources/firestore_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'getPages'.
+    return _firestore.getPages();
+                      ^^^^^^^^
+lib/data/repositories/content_repository.dart:149:23: Error: The method 'getPageBySlug' isn't defined for the class 'FirestoreDataSource'.
+ - 'FirestoreDataSource' is from 'package:laws_and_legals/data/datasources/firestore_data_source.dart' ('lib/data/datasources/firestore_data_source.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'getPageBySlug'.
+    return _firestore.getPageBySlug(slug);
+                      ^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:processDebugMainManifest'.
-> Manifest merger failed : uses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [com.google.firebase:firebase-auth:23.2.1] /home/runner/.gradle/caches/transforms-3/af7b9c66742d1d933e1241c81dbe5bae/transformed/jetified-firebase-auth-23.2.1/AndroidManifest.xml as the library might be using APIs not available in 21
-  	Suggestion: use a compatible library with a minSdk of at most 21,
-  		or increase this project's minSdk version to at least 23,
-  		or use tools:overrideLibrary="com.google.firebase.auth" to force usage (may lead to runtime failures)
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command '/opt/hostedtoolcache/flutter/stable-3.24.3-x64/flutter/bin/flutter'' finished with non-zero exit value 1
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -224,6 +248,6 @@ Execution failed for task ':app:processDebugMainManifest'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 2m 39s
-Running Gradle task 'assembleDebug'...                            160.4s
+BUILD FAILED in 2m 27s
+Running Gradle task 'assembleDebug'...                            147.6s
 Gradle task assembleDebug failed with exit code 1
