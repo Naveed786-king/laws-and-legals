@@ -118,6 +118,7 @@ class FirestoreDataSource {
     } catch (_) {
       return null;
     }
+  }
 
   Future<List<AppPage>> getPages() async {
     try {

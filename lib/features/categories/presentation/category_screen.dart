@@ -24,7 +24,6 @@ class CategoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postsAsync = ref.watch(postsByCategoryProvider(categoryId));
-    final theme = Theme.of(context);
 
     return Scaffold(
       // No drawer/menu icon here - this is a pushed detail screen reached
