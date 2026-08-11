@@ -10,6 +10,7 @@ class HomeSection {
   final BannerPosition bannerPosition;
   final int order;
   final int postsLimit;
+  final String? bannerId;
 
   const HomeSection({
     required this.id,
@@ -19,5 +20,6 @@ class HomeSection {
     this.bannerPosition = BannerPosition.none,
     required this.order,
     this.postsLimit = 5,
+    this.bannerId,
   });
 }

@@ -59,6 +59,7 @@ class ContentRepository {
           },
           order: (cfg['order'] ?? 0) as int,
           postsLimit: limit,
+          bannerId: cfg['bannerId'] as String?,
         ));
       }
       if (sections.isNotEmpty) {
@@ -134,6 +135,10 @@ class ContentRepository {
 
   Future<List<BannerAd>> getBanners(String position) async {
     return _firestore.getBanners(position);
+  }
+
+  Future<BannerAd?> getBannerById(String bannerId) async {
+    return _firestore.getBannerById(bannerId);
   }
 
   Future<List<AppPage>> getPages() async {

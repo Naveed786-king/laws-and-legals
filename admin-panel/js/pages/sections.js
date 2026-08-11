@@ -8,22 +8,10 @@ export async function render(outlet, toast) {
   const categories = catSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   const secSnap = await getDocs(query(collection(db, "homeSections"), orderBy("order")));
   const sections = secSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-  const REFERENCE_CATEGORIES = [
-    "राष्ट्रीय", "लॉ एंड लीगल", "कानून", "बार व बेंच",
-    "आर्ट एंड जस्टिस", "लीगल सर्विस", "लीगल एज्यूकेशन", "परिचर्चा",
-  ];
+  const bannerSnap = await getDocs(collection(db, "banners"));
+  const banners = bannerSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   outlet.innerHTML = `
-    <div class="card" style="background:#FFF8E1;">
-      <h3>Quick Setup</h3>
-      <p style="color:#5C6066;">One click to create the standard category set
-      (राष्ट्रीय, लॉ एंड लीगल, कानून, बार व बेंच, आर्ट एंड जस्टिस, लीगल सर्विस,
-      लीगल एज्यूकेशन, परिचर्चा) plus a Home Section for each - only adds
-      categories that don't already exist by name.</p>
-      <button class="btn-primary" id="quick-setup-btn" style="width:auto;">Create Standard Categories + Sections</button>
-    </div>
-
     <h1>Categories</h1>
     <div class="card">
       <table>
@@ -56,7 +44,7 @@ export async function render(outlet, toast) {
             <tr>
               <td>${escapeHtml(s.title)}</td>
               <td>${escapeHtml(categories.find((c) => c.id === s.categoryId)?.name || "")}</td>
-              <td>${s.bannerPosition}</td>
+              <td>${s.bannerPosition === "none" ? "None" : `${s.bannerPosition} ${s.bannerId ? "(banner set)" : "(no banner picked)"}`}</td>
               <td>${s.order}</td>
               <td>${s.isEnabled ? "Yes" : "No"}</td>
               <td>
@@ -70,45 +58,12 @@ export async function render(outlet, toast) {
         </tbody>
       </table>
       <button class="btn-primary" id="new-sec-btn" style="width:auto;margin-top:12px;" ${categories.length === 0 ? "disabled" : ""}>+ New Section</button>
+      ${categories.length === 0 ? `<p style="color:#5C6066;font-size:13px;">Add a category first.</p>` : ""}
       <div class="hidden" id="sec-form-card" style="margin-top:16px;"></div>
     </div>
   `;
 
   // ---- Categories ----
-  document.getElementById("quick-setup-btn").onclick = async () => {
-    try {
-      const existingNames = categories.map((c) => c.name);
-      let nextOrder = categories.length;
-      const createdIds = {};
-      for (const name of REFERENCE_CATEGORIES) {
-        if (existingNames.includes(name)) continue;
-        const ref = await addDoc(collection(db, "categories"), { name, order: nextOrder });
-        createdIds[name] = ref.id;
-        nextOrder++;
-      }
-      // Also create a Home Section for any newly created category that
-      // doesn't already have one.
-      const existingSectionCategoryIds = sections.map((s) => s.categoryId);
-      let sectionOrder = sections.length;
-      for (const [name, id] of Object.entries(createdIds)) {
-        if (existingSectionCategoryIds.includes(id)) continue;
-        await addDoc(collection(db, "homeSections"), {
-          title: name,
-          categoryId: id,
-          bannerPosition: "none",
-          order: sectionOrder,
-          isEnabled: true,
-        });
-        sectionOrder++;
-      }
-      toast("Standard categories and sections created");
-      render(outlet, toast);
-    } catch (err) {
-      console.error(err);
-      alert("Could not set up: " + (err && err.message ? err.message : err));
-    }
-  };
-
   document.getElementById("new-cat-btn").onclick = () => showCatForm(null);
   outlet.querySelectorAll(".edit-cat-btn").forEach((btn) => {
     btn.onclick = () => showCatForm(categories.find((c) => c.id === btn.dataset.id));
@@ -167,9 +122,15 @@ export async function render(outlet, toast) {
   }
 
   // ---- Sections ----
-  document.getElementById("new-sec-btn").onclick = () => showSecForm(null);
+  document.getElementById("new-sec-btn").onclick = () => {
+    showSecForm(null);
+    document.getElementById("sec-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   outlet.querySelectorAll(".edit-sec-btn").forEach((btn) => {
-    btn.onclick = () => showSecForm(sections.find((s) => s.id === btn.dataset.id));
+    btn.onclick = () => {
+      showSecForm(sections.find((s) => s.id === btn.dataset.id));
+      document.getElementById("sec-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
   });
   outlet.querySelectorAll(".delete-sec-btn").forEach((btn) => {
     btn.onclick = async () => {
@@ -197,11 +158,19 @@ export async function render(outlet, toast) {
         ${categories.map((c) => `<option value="${c.id}" ${sec && sec.categoryId === c.id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
       </select>
       <label class="field-label">Banner Position</label>
-      <select id="s-banner">
-        <option value="none" ${sec && sec.bannerPosition === "none" ? "selected" : ""}>None</option>
+      <select id="s-banner-position">
+        <option value="none" ${!sec || sec.bannerPosition === "none" ? "selected" : ""}>None</option>
         <option value="above" ${sec && sec.bannerPosition === "above" ? "selected" : ""}>Above section</option>
         <option value="below" ${sec && sec.bannerPosition === "below" ? "selected" : ""}>Below section</option>
       </select>
+      <div id="s-banner-picker-wrap" class="${!sec || sec.bannerPosition === "none" ? "hidden" : ""}">
+        <label class="field-label">Which Banner</label>
+        <select id="s-banner-id">
+          <option value="">-- Select a banner --</option>
+          ${banners.map((b) => `<option value="${b.id}" ${sec && sec.bannerId === b.id ? "selected" : ""}>${b.destinationUrl || b.id} ${b.isEnabled ? "" : "(disabled)"}</option>`).join("")}
+        </select>
+        ${banners.length === 0 ? `<p style="color:#5C6066;font-size:13px;">No banners exist yet - add one in the Banners tab first, then come back here to pick it.</p>` : ""}
+      </div>
       <label class="field-label">Order (controls position on home page)</label>
       <input type="number" id="s-order" value="${sec ? sec.order : sections.length}" />
       <label class="field-label">Posts to show in this section</label>
@@ -209,14 +178,21 @@ export async function render(outlet, toast) {
       <label class="field-label"><input type="checkbox" id="s-enabled" ${!sec || sec.isEnabled ? "checked" : ""} style="width:auto;display:inline;"/> Enabled</label>
       <button class="btn-primary" id="save-sec-btn" style="width:auto;">Save</button>
     `;
+
+    document.getElementById("s-banner-position").onchange = (e) => {
+      document.getElementById("s-banner-picker-wrap").classList.toggle("hidden", e.target.value === "none");
+    };
+
     document.getElementById("save-sec-btn").onclick = async () => {
       try {
         const categoryId = document.getElementById("s-category").value;
         const category = categories.find((c) => c.id === categoryId);
+        const bannerPosition = document.getElementById("s-banner-position").value;
         const payload = {
           title: document.getElementById("s-title").value.trim(),
           categoryId,
-          bannerPosition: document.getElementById("s-banner").value,
+          bannerPosition,
+          bannerId: bannerPosition === "none" ? null : (document.getElementById("s-banner-id").value || null),
           order: Number(document.getElementById("s-order").value) || 0,
           postsLimit: Number(document.getElementById("s-limit").value) || 5,
           isEnabled: document.getElementById("s-enabled").checked,

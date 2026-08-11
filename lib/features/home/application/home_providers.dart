@@ -13,3 +13,9 @@ final homeBannersProvider =
   final repo = ref.watch(contentRepositoryProvider);
   return repo.getBanners(position);
 });
+
+final homeBannerByIdProvider =
+    FutureProvider.family<BannerAd?, String>((ref, bannerId) async {
+  final repo = ref.watch(contentRepositoryProvider);
+  return repo.getBannerById(bannerId);
+});

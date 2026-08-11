@@ -1,10 +1,10 @@
 :root {
-  --navy: #0B1F3A;
-  --navy-light: #16305A;
-  --gold: #C79A3B;
+  --navy: #B80000;
+  --navy-light: #D32424;
+  --gold: #000000;
   --bg: #F4F5F7;
   --surface: #FFFFFF;
-  --text: #1A1C1E;
+  --text: #000000;
   --text-muted: #5C6066;
   --danger: #B3261E;
   --success: #2E7D32;

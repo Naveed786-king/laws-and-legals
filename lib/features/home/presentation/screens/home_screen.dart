@@ -156,7 +156,7 @@ class _SectionBlock extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           if (position == BannerPosition.above) ...[
-            _SectionBanner(position: 'home_top'),
+            _SectionBanner(bannerId: section.bannerId, fallbackPosition: 'home_top'),
             const SizedBox(height: 12),
           ],
           FeaturedPostCard(post: lead, onTap: () => openPost(lead.id)),
@@ -164,7 +164,7 @@ class _SectionBlock extends ConsumerWidget {
           for (final p in rest) CompactPostCard(post: p, onTap: () => openPost(p.id)),
           if (position == BannerPosition.below) ...[
             const SizedBox(height: 8),
-            _SectionBanner(position: 'home_middle'),
+            _SectionBanner(bannerId: section.bannerId, fallbackPosition: 'home_middle'),
           ],
         ],
       ),
@@ -173,12 +173,21 @@ class _SectionBlock extends ConsumerWidget {
 }
 
 class _SectionBanner extends ConsumerWidget {
-  const _SectionBanner({required this.position});
-  final String position;
+  const _SectionBanner({this.bannerId, required this.fallbackPosition});
+  final String? bannerId;
+  final String fallbackPosition;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bannersAsync = ref.watch(homeBannersProvider(position));
+    if (bannerId != null && bannerId!.isNotEmpty) {
+      final bannerAsync = ref.watch(homeBannerByIdProvider(bannerId!));
+      return bannerAsync.when(
+        data: (banner) => banner == null ? const SizedBox.shrink() : AdBannerWidget(banner: banner),
+        loading: () => const SizedBox.shrink(),
+        error: (_, __) => const SizedBox.shrink(),
+      );
+    }
+    final bannersAsync = ref.watch(homeBannersProvider(fallbackPosition));
     return bannersAsync.when(
       data: (banners) =>
           banners.isEmpty ? const SizedBox.shrink() : AdBannerWidget(banner: banners.first),

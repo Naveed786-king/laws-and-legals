@@ -13,15 +13,7 @@ export async function render(outlet, toast) {
 
   function renderList() {
     outlet.innerHTML = `
-      <div class="card" style="background:#FFF8E1;">
-        <h3>Quick Setup</h3>
-        <p style="color:#5C6066;">One click to build the standard menu (होम पेज plus a link for every
-        category that currently exists). Run this after using Home Sections > Quick Setup to create
-        the categories first.</p>
-        <button class="btn-primary" id="quick-menu-btn" style="width:auto;">Build Menu From Categories</button>
-      </div>
-
-      <h1>Left Menu</h1>
+      <h1>Menu</h1>
       <p style="color:#5C6066;">Controls what appears in the app's left-side menu (tap the ☰ icon in the app).
       Add categories or pages, and reorder them with ↑↓.</p>
       <div class="card">
@@ -52,15 +44,6 @@ export async function render(outlet, toast) {
         <button class="btn-primary" id="save-menu-btn" style="width:auto;margin-top:16px;">Save Menu</button>
       </div>
     `;
-
-    document.getElementById("quick-menu-btn").onclick = () => {
-      const homeItem = { label: "होम पेज", type: "home", targetId: "" };
-      const categoryItems = categories
-        .filter((c) => !items.some((i) => i.type === "category" && i.targetId === c.id))
-        .map((c) => ({ label: c.name, type: "category", targetId: c.id }));
-      items = [homeItem, ...items.filter((i) => i.type !== "home"), ...categoryItems];
-      renderList();
-    };
 
     function refreshTargetOptions() {
       const type = document.getElementById("new-item-type").value;

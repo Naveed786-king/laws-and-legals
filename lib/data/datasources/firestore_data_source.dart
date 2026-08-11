@@ -100,6 +100,25 @@ class FirestoreDataSource {
     }
   }
 
+  Future<BannerAd?> getBannerById(String bannerId) async {
+    try {
+      final doc = await _db.collection('banners').doc(bannerId).get();
+      if (!doc.exists) return null;
+      final data = doc.data()!;
+      final banner = BannerAd(
+        id: doc.id,
+        imageUrl: data['imageUrl'] ?? '',
+        destinationUrl: data['destinationUrl'] ?? '',
+        position: data['position'] ?? '',
+        priority: (data['priority'] ?? 0) as int,
+        isEnabled: data['isEnabled'] ?? true,
+        isVisible: data['isVisible'] ?? true,
+      );
+      return banner.isEnabled ? banner : null;
+    } catch (_) {
+      return null;
+    }
+
   Future<List<AppPage>> getPages() async {
     try {
       final snap = await _db.collection('pages').get();
