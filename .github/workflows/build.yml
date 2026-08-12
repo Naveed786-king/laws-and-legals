@@ -37,6 +37,7 @@ jobs:
             python3 scripts/patch_android.py
 
             flutter pub get
+            dart run flutter_launcher_icons
             flutter analyze --no-fatal-infos --no-fatal-warnings || true
             flutter build apk --debug
             flutter build appbundle --release
