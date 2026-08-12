@@ -52,8 +52,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
         title: const Text('Search'),
+        actions: [
+          Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        ],
       ),
       body: Column(
         children: [

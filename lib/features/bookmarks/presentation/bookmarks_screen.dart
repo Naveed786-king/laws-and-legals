@@ -19,8 +19,10 @@ class BookmarksScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
         title: const Text('Bookmarks'),
+        actions: [
+          Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
+        ],
       ),
       body: bookmarksAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

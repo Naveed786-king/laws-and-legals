@@ -64,7 +64,9 @@ class _PostBody extends ConsumerWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.share),
-              onPressed: () => Share.share('${post.title}\n\n(Laws And Legals app - demo mode)'),
+              onPressed: () => Share.share(
+                '${post.title}\n\nRead more on the Laws And Legals app: https://github.com/Naveed786-king/laws-and-legals/releases/latest',
+              ),
             ),
             bookmarkedAsync.when(
               data: (isBookmarked) => IconButton(

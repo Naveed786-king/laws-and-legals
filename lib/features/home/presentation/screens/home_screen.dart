@@ -34,32 +34,27 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: const Text('Laws And Legals'),
-        actions: [
-          logoUrlAsync.when(
-            data: (url) => url == null
-                ? const SizedBox.shrink()
-                : Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: CachedNetworkImage(
-                        imageUrl: url,
-                        width: 36,
-                        height: 36,
-                        fit: BoxFit.contain,
-                        errorWidget: (c, _, __) => const SizedBox.shrink(),
-                      ),
-                    ),
+        title: logoUrlAsync.when(
+          data: (url) => url == null
+              ? const Text('Laws And Legals')
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorWidget: (c, _, __) => const Text('Laws And Legals'),
                   ),
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+                ),
+          loading: () => const Text('Laws And Legals'),
+          error: (_, __) => const Text('Laws And Legals'),
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
           ),
         ],
       ),
@@ -128,9 +123,15 @@ class _SectionBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (section.isBanner) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: _SectionBanner(bannerId: section.bannerId),
+      );
+    }
+
     final lead = section.posts.first;
     final rest = section.posts.skip(1).take(4).toList();
-    final position = section.bannerPosition;
 
     void openPost(String id) {
       Navigator.of(context).push(
@@ -155,17 +156,9 @@ class _SectionBlock extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 10),
-          if (position == BannerPosition.above) ...[
-            _SectionBanner(bannerId: section.bannerId, fallbackPosition: 'home_top'),
-            const SizedBox(height: 12),
-          ],
           FeaturedPostCard(post: lead, onTap: () => openPost(lead.id)),
           const SizedBox(height: 8),
           for (final p in rest) CompactPostCard(post: p, onTap: () => openPost(p.id)),
-          if (position == BannerPosition.below) ...[
-            const SizedBox(height: 8),
-            _SectionBanner(bannerId: section.bannerId, fallbackPosition: 'home_middle'),
-          ],
         ],
       ),
     );
@@ -173,24 +166,15 @@ class _SectionBlock extends ConsumerWidget {
 }
 
 class _SectionBanner extends ConsumerWidget {
-  const _SectionBanner({this.bannerId, required this.fallbackPosition});
+  const _SectionBanner({this.bannerId});
   final String? bannerId;
-  final String fallbackPosition;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (bannerId != null && bannerId!.isNotEmpty) {
-      final bannerAsync = ref.watch(homeBannerByIdProvider(bannerId!));
-      return bannerAsync.when(
-        data: (banner) => banner == null ? const SizedBox.shrink() : AdBannerWidget(banner: banner),
-        loading: () => const SizedBox.shrink(),
-        error: (_, __) => const SizedBox.shrink(),
-      );
-    }
-    final bannersAsync = ref.watch(homeBannersProvider(fallbackPosition));
-    return bannersAsync.when(
-      data: (banners) =>
-          banners.isEmpty ? const SizedBox.shrink() : AdBannerWidget(banner: banners.first),
+    if (bannerId == null || bannerId!.isEmpty) return const SizedBox.shrink();
+    final bannerAsync = ref.watch(homeBannerByIdProvider(bannerId!));
+    return bannerAsync.when(
+      data: (banner) => banner == null ? const SizedBox.shrink() : AdBannerWidget(banner: banner),
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
     );

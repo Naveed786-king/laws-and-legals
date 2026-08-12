@@ -43,23 +43,33 @@ class ContentRepository {
       final allPosts = await _firestore.getPublishedPosts();
       final sections = <HomeSection>[];
       for (final cfg in sectionConfigs) {
+        final type = cfg['type'] as String? ?? 'category';
+        if (type == 'banner') {
+          final bannerId = cfg['bannerId'] as String?;
+          if (bannerId == null || bannerId.isEmpty) continue;
+          sections.add(HomeSection(
+            id: cfg['id'] as String,
+            type: 'banner',
+            title: cfg['title'] as String? ?? '',
+            categoryId: '',
+            posts: const [],
+            order: (cfg['order'] ?? 0) as int,
+            bannerId: bannerId,
+          ));
+          continue;
+        }
         final categoryId = cfg['categoryId'] as String? ?? '';
         final posts = allPosts.where((p) => p.categoryId == categoryId).toList();
         if (posts.isEmpty) continue;
         final limit = (cfg['postsLimit'] ?? 5) as int;
         sections.add(HomeSection(
           id: cfg['id'] as String,
+          type: 'category',
           title: cfg['title'] as String? ?? '',
           categoryId: categoryId,
           posts: posts.take(limit).toList(),
-          bannerPosition: switch (cfg['bannerPosition']) {
-            'above' => BannerPosition.above,
-            'below' => BannerPosition.below,
-            _ => BannerPosition.none,
-          },
           order: (cfg['order'] ?? 0) as int,
           postsLimit: limit,
-          bannerId: cfg['bannerId'] as String?,
         ));
       }
       if (sections.isNotEmpty) {
@@ -79,10 +89,10 @@ class ContentRepository {
       return byCategory.entries.map((e) {
         return HomeSection(
           id: 'cached-${e.key}',
+          type: 'category',
           title: e.value.first.categoryName,
           categoryId: e.key,
           posts: e.value,
-          bannerPosition: BannerPosition.none,
           order: order++,
         );
       }).toList();
