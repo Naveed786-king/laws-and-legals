@@ -27,4 +27,5 @@ class HomeSection {
   });
 
   bool get isBanner => type == 'banner';
+  bool get isYoutube => type == 'youtube';
 }

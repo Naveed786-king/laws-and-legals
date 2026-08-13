@@ -44,6 +44,17 @@ class ContentRepository {
       final sections = <HomeSection>[];
       for (final cfg in sectionConfigs) {
         final type = cfg['type'] as String? ?? 'category';
+        if (type == 'youtube') {
+          sections.add(HomeSection(
+            id: cfg['id'] as String,
+            type: 'youtube',
+            title: cfg['title'] as String? ?? '',
+            categoryId: '',
+            posts: const [],
+            order: (cfg['order'] ?? 0) as int,
+          ));
+          continue;
+        }
         if (type == 'banner') {
           final bannerId = cfg['bannerId'] as String?;
           if (bannerId == null || bannerId.isEmpty) continue;

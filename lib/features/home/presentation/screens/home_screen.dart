@@ -102,9 +102,6 @@ class HomeScreen extends ConsumerWidget {
             final blocks = <Widget>[
               for (final s in sections) _SectionBlock(section: s),
             ];
-            // Insert the YouTube section second-to-last, per requested layout.
-            final insertAt = blocks.isEmpty ? 0 : blocks.length - 1;
-            blocks.insert(insertAt, const HomeYoutubeSection());
             return ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               itemCount: blocks.length,
@@ -123,6 +120,12 @@ class _SectionBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (section.isYoutube) {
+      return const Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: HomeYoutubeSection(),
+      );
+    }
     if (section.isBanner) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 20),

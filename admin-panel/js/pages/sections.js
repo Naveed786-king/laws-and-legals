@@ -16,6 +16,9 @@ export async function render(outlet, toast) {
       const b = banners.find((x) => x.id === s.bannerId);
       return `Banner: ${b ? (b.destinationUrl || b.id) : "(not found)"}`;
     }
+    if (s.type === "youtube") {
+      return "YouTube Channel";
+    }
     return `Category: ${categories.find((c) => c.id === s.categoryId)?.name || "(not found)"}`;
   }
 
@@ -166,10 +169,11 @@ export async function render(outlet, toast) {
     card.innerHTML = `
       <h3>What kind of section is this?</h3>
       <p style="color:#5C6066;">Choose based on what you need - a feed of posts from one category,
-      or a standalone banner image.</p>
-      <div class="row" style="gap:12px;">
+      a standalone banner image, or your YouTube channel videos.</p>
+      <div class="row" style="gap:12px;flex-wrap:wrap;">
         <button class="btn-primary" id="choose-category-btn" style="width:auto;" ${categories.length === 0 ? "disabled" : ""}>Category Section</button>
         <button class="btn-primary" id="choose-banner-btn" style="width:auto;" ${banners.length === 0 ? "disabled" : ""}>Banner Section</button>
+        <button class="btn-primary" id="choose-youtube-btn" style="width:auto;">YouTube Channel Section</button>
       </div>
       ${categories.length === 0 ? `<p style="color:#5C6066;font-size:13px;margin-top:8px;">Add a category above first to use a Category Section.</p>` : ""}
       ${banners.length === 0 ? `<p style="color:#5C6066;font-size:13px;">Add a banner in the Banners tab first to use a Banner Section.</p>` : ""}
@@ -184,12 +188,51 @@ export async function render(outlet, toast) {
       showSecForm(null, "banner");
       document.getElementById("sec-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
     };
+    document.getElementById("choose-youtube-btn").onclick = () => {
+      card.classList.add("hidden");
+      showSecForm(null, "youtube");
+      document.getElementById("sec-form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
   }
 
   // Step 2: the actual form, specific to the chosen type.
   function showSecForm(sec, type) {
     const card = document.getElementById("sec-form-card");
     card.classList.remove("hidden");
+
+    if (type === "youtube") {
+      card.innerHTML = `
+        <h3>${sec ? "Edit YouTube Section" : "New YouTube Section"}</h3>
+        <p style="color:#5C6066;">Shows your channel videos (managed in the YouTube tab) as a horizontal
+        scrolling row on the home page, wherever you place this section.</p>
+        <label class="field-label">Order (controls position on home page)</label>
+        <input type="number" id="s-order" value="${sec ? sec.order : sections.length}" />
+        <label class="field-label"><input type="checkbox" id="s-enabled" ${!sec || sec.isEnabled ? "checked" : ""} style="width:auto;display:inline;"/> Enabled</label>
+        <div class="row" style="margin-top:16px;gap:8px;">
+          <button class="btn-primary" id="save-sec-btn" style="width:auto;">Save</button>
+          <button class="btn-secondary" id="cancel-sec-btn" style="width:auto;">Cancel</button>
+        </div>
+      `;
+      document.getElementById("cancel-sec-btn").onclick = () => card.classList.add("hidden");
+      document.getElementById("save-sec-btn").onclick = async () => {
+        try {
+          const payload = {
+            type: "youtube",
+            title: "",
+            order: Number(document.getElementById("s-order").value) || 0,
+            isEnabled: document.getElementById("s-enabled").checked,
+          };
+          if (sec) await updateDoc(doc(db, "homeSections", sec.id), payload);
+          else await addDoc(collection(db, "homeSections"), payload);
+          toast("YouTube section saved");
+          render(outlet, toast);
+        } catch (err) {
+          console.error(err);
+          alert("Could not save: " + (err && err.message ? err.message : err));
+        }
+      };
+      return;
+    }
 
     if (type === "banner") {
       card.innerHTML = `
