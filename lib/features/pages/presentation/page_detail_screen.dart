@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../../core/widgets/html_lite.dart';
 
 final pageBySlugProvider = FutureProvider.family((ref, String slug) {
   return ref.watch(contentRepositoryProvider).getPageBySlug(slug);
@@ -20,10 +21,9 @@ class PageDetailScreen extends ConsumerWidget {
         error: (e, st) => const Center(child: Text('Could not load page')),
         data: (page) {
           if (page == null) return const Center(child: Text('Page not found'));
-          final text = page.htmlContent.replaceAll(RegExp(r'<[^>]+>'), '');
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
+            child: HtmlLite(html: page.htmlContent),
           );
         },
       ),

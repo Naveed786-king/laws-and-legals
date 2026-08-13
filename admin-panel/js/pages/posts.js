@@ -102,7 +102,7 @@ export async function render(outlet, toast) {
 
     const initialBlocks = post && post.blocks && post.blocks.length > 0
       ? post.blocks
-      : (post && post.content ? [{ type: "paragraph", text: post.content.replace(/<[^>]+>/g, "") }] : []);
+      : (post && post.content ? [{ type: "paragraph", html: post.content.replace(/<[^>]+>/g, "") }] : []);
     const editor = createBlockEditor(document.getElementById("content-editor-mount"), initialBlocks);
 
     document.getElementById("cancel-post-btn").onclick = () => card.classList.add("hidden");

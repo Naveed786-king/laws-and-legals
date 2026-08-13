@@ -69,7 +69,7 @@ export async function render(outlet, toast) {
 
     const initialBlocks = page && page.blocks && page.blocks.length > 0
       ? page.blocks
-      : (page && page.content ? [{ type: "paragraph", text: page.content.replace(/<[^>]+>/g, "") }] : []);
+      : (page && page.content ? [{ type: "paragraph", html: page.content.replace(/<[^>]+>/g, "") }] : []);
     const editor = createBlockEditor(document.getElementById("page-content-mount"), initialBlocks);
 
     document.getElementById("cancel-page-btn").onclick = () => card.classList.add("hidden");

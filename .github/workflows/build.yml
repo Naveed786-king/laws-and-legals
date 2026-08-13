@@ -37,6 +37,7 @@ jobs:
             python3 scripts/patch_android.py
 
             flutter pub get
+            curl -sL -o assets/icon/app_icon.png "https://yt3.ggpht.com/-jC0_R9pTa13Tppl0XLnz9xa7C7Frp4nskWxyyRbJUVLGsvZiD62kRAHAM4Vnn-gDjTXWQ_pyQ=s800-c-k-c0x00ffffff-no-rj" || echo "Custom icon download failed, keeping the built-in fallback icon"
             dart run flutter_launcher_icons
             flutter analyze --no-fatal-infos --no-fatal-warnings || true
             flutter build apk --debug
