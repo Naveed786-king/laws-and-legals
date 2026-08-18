@@ -34,6 +34,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: logoUrlAsync.when(
           data: (url) => url == null
               ? const Text('Laws And Legals')

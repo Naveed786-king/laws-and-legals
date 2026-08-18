@@ -17,6 +17,7 @@ class CategoriesListScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Categories'),
         actions: [
           Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),

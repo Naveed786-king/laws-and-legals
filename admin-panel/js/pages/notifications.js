@@ -1,4 +1,4 @@
-import { db, collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "../firebase-init.js";
+import { db, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "../firebase-init.js";
 import { escapeHtml } from "../ui.js";
 
 export async function render(outlet, toast) {
@@ -23,19 +23,34 @@ export async function render(outlet, toast) {
     <h3>History</h3>
     <div class="card">
       <table>
-        <thead><tr><th>Title</th><th>Message</th><th>Sent</th></tr></thead>
+        <thead><tr><th>Title</th><th>Message</th><th>Sent</th><th></th></tr></thead>
         <tbody>
           ${notifications.map((n) => `
             <tr>
               <td>${escapeHtml(n.title)}</td>
               <td>${escapeHtml(n.body)}</td>
               <td>${n.createdAt && n.createdAt.toDate ? n.createdAt.toDate().toLocaleString() : ""}</td>
+              <td><button class="btn-danger delete-notif-btn" data-id="${n.id}">Delete</button></td>
             </tr>
-          `).join("") || `<tr><td colspan="3">No notifications sent yet.</td></tr>`}
+          `).join("") || `<tr><td colspan="4">No notifications sent yet.</td></tr>`}
         </tbody>
       </table>
     </div>
   `;
+
+  outlet.querySelectorAll(".delete-notif-btn").forEach((btn) => {
+    btn.onclick = async () => {
+      if (!confirm("Delete this notification?")) return;
+      try {
+        await deleteDoc(doc(db, "notifications", btn.dataset.id));
+        toast("Notification deleted");
+        render(outlet, toast);
+      } catch (err) {
+        console.error(err);
+        alert("Could not delete: " + (err && err.message ? err.message : err));
+      }
+    };
+  });
 
   document.getElementById("send-btn").onclick = async () => {
     try {

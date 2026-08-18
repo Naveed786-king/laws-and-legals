@@ -6,6 +6,8 @@ import '../../pages/presentation/pages_list_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../notifications/application/notification_service.dart';
 import '../../menu/presentation/app_drawer.dart';
+import '../../auth/application/auth_service.dart';
+import '../../auth/presentation/login_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Settings'),
         actions: [
           Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer())),
@@ -24,6 +27,9 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
+          const _SectionLabel('Profile'),
+          const _ProfileTile(),
+          const Divider(),
           const _SectionLabel('Appearance'),
           RadioListTile<ThemeMode>(
             title: const Text('System Default'),
@@ -88,6 +94,40 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+}
+
+class _ProfileTile extends StatelessWidget {
+  const _ProfileTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: AuthService.authStateChanges,
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        if (user == null) {
+          return ListTile(
+            leading: const Icon(Icons.account_circle_outlined),
+            title: const Text('Not signed in'),
+            subtitle: const Text('Sign in to sync bookmarks across devices'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+          );
+        }
+        return ListTile(
+          leading: const Icon(Icons.account_circle),
+          title: Text(user.displayName ?? user.email ?? 'Signed in'),
+          subtitle: user.displayName != null ? Text(user.email ?? '') : null,
+          trailing: TextButton(
+            onPressed: () => AuthService.signOut(),
+            child: const Text('Sign Out'),
+          ),
+        );
+      },
     );
   }
 }
