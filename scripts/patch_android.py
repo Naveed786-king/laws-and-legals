@@ -15,6 +15,8 @@ approach did and why this script exists).
 import re
 import shutil
 import sys
+import os
+import base64
 from pathlib import Path
 
 ANDROID = Path("android")
@@ -206,6 +208,53 @@ def main():
             "}\n"
         )
         print(f"OK: replaced {test_file} with a working smoke test")
+
+    # ---- Release signing (only if secrets are configured) ----
+    # Play Store rejects debug-signed bundles, so a real release keystore
+    # is required to publish. Driven entirely by env vars so this is a
+    # no-op (falls back to the default debug signing, same as before)
+    # until RELEASE_KEYSTORE_BASE64 etc. are set as GitHub secrets.
+    keystore_b64 = os.environ.get("RELEASE_KEYSTORE_BASE64", "")
+    if keystore_b64:
+        keystore_path = Path("android/app/release-keystore.jks")
+        keystore_path.write_bytes(base64.b64decode(keystore_b64))
+        print(f"OK: wrote release keystore to {keystore_path}")
+
+        key_properties = (
+            f"storeFile=release-keystore.jks\n"
+            f"storePassword={os.environ.get('RELEASE_KEYSTORE_PASSWORD', '')}\n"
+            f"keyAlias={os.environ.get('RELEASE_KEY_ALIAS', '')}\n"
+            f"keyPassword={os.environ.get('RELEASE_KEY_PASSWORD', '')}\n"
+        )
+        Path("android/key.properties").write_text(key_properties)
+        print("OK: wrote android/key.properties")
+
+        signing_config_block = (
+            '    signingConfigs {\n'
+            '        release {\n'
+            '            def keystoreProperties = new Properties()\n'
+            "            def keystorePropertiesFile = rootProject.file('key.properties')\n"
+            '            if (keystorePropertiesFile.exists()) {\n'
+            '                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))\n'
+            '            }\n'
+            "            storeFile file(keystoreProperties['storeFile'])\n"
+            "            storePassword keystoreProperties['storePassword']\n"
+            "            keyAlias keystoreProperties['keyAlias']\n"
+            "            keyPassword keystoreProperties['keyPassword']\n"
+            '        }\n'
+            '    }\n'
+        )
+        insert_into_block(app_gradle, r"android\s*\{", signing_config_block, "release signingConfigs")
+
+        # Point buildTypes.release at the new signing config via a post-hoc
+        # property assignment appended at file end - avoids needing to
+        # parse/modify whatever the existing buildTypes.release block
+        # already contains (which varies across Flutter template versions).
+        with open(app_gradle, "a") as f:
+            f.write("\nandroid.buildTypes.release.signingConfig = android.signingConfigs.release\n")
+        print("OK: wired buildTypes.release to the release signing config")
+    else:
+        print("NOTE: RELEASE_KEYSTORE_BASE64 not set - release build will use debug signing (fine for testing, NOT valid for Play Store upload).")
 
     print("\n=== Android platform folder patched successfully ===")
 
