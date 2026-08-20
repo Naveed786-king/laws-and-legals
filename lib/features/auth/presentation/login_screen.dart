@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_shell.dart';
+import '../../../core/widgets/brand_icons.dart';
 import '../application/auth_service.dart';
 
 /// Optional login: Email/Password and Google sign-in are both real and
@@ -107,14 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
               ] else ...[
                 OutlinedButton.icon(
-                  icon: const FaIcon(FontAwesomeIcons.google, size: 20, color: Color(0xFF4285F4)),
+                  icon: const GoogleGIcon(size: 20),
                   label: const Text('Continue with Google'),
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                   onPressed: _loading ? null : _submitGoogle,
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  icon: const FaIcon(FontAwesomeIcons.solidEnvelope, size: 18),
+                  icon: const Icon(Icons.email_outlined),
                   label: const Text('Continue with Email'),
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                   onPressed: () => setState(() => _showEmailForm = true),

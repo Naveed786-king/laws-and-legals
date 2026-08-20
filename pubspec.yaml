@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  font_awesome_flutter: ^10.7.0
 
   # State management
   flutter_riverpod: ^2.5.1
