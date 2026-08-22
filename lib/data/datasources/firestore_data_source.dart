@@ -29,6 +29,8 @@ class FirestoreDataSource {
       publishedAt: _toDate(d['publishedAt']),
       categoryId: d['categoryId'] ?? '',
       categoryName: d['categoryName'] ?? '',
+      categoryIds: (d['categoryIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      categoryNames: (d['categoryNames'] as List?)?.map((e) => e.toString()).toList() ?? [],
       tags: (d['tags'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }

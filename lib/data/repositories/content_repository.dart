@@ -70,7 +70,7 @@ class ContentRepository {
           continue;
         }
         final categoryId = cfg['categoryId'] as String? ?? '';
-        final posts = allPosts.where((p) => p.categoryId == categoryId).toList();
+        final posts = allPosts.where((p) => p.allCategoryIds.contains(categoryId)).toList();
         if (posts.isEmpty) continue;
         final limit = (cfg['postsLimit'] ?? 5) as int;
         sections.add(HomeSection(
@@ -115,13 +115,13 @@ class ContentRepository {
   Future<List<Post>> getPostsByCategory(String categoryId) async {
     final live = await _firestore.getPublishedPosts();
     if (live.isNotEmpty) {
-      return live.where((p) => p.categoryId == categoryId).toList();
+      return live.where((p) => p.allCategoryIds.contains(categoryId)).toList();
     }
     final cachedPosts = await _cache.read<List>('posts');
     if (cachedPosts != null && cachedPosts.isNotEmpty) {
       return cachedPosts
           .map((m) => Post.fromMap(m))
-          .where((p) => p.categoryId == categoryId)
+          .where((p) => p.allCategoryIds.contains(categoryId))
           .toList();
     }
     return [];

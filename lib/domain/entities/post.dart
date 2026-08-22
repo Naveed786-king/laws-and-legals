@@ -8,6 +8,8 @@ class Post {
   final DateTime publishedAt;
   final String categoryId;
   final String categoryName;
+  final List<String> categoryIds;
+  final List<String> categoryNames;
   final List<String> tags;
   final bool isBookmarked;
 
@@ -21,9 +23,16 @@ class Post {
     required this.publishedAt,
     required this.categoryId,
     required this.categoryName,
+    this.categoryIds = const [],
+    this.categoryNames = const [],
     this.tags = const [],
     this.isBookmarked = false,
   });
+
+  /// All categories this post belongs to. Falls back to the single
+  /// primary category for posts saved before multi-category support.
+  List<String> get allCategoryIds => categoryIds.isNotEmpty ? categoryIds : [categoryId];
+  List<String> get allCategoryNames => categoryNames.isNotEmpty ? categoryNames : [categoryName];
 
   Post copyWith({bool? isBookmarked}) => Post(
         id: id,
@@ -35,6 +44,8 @@ class Post {
         publishedAt: publishedAt,
         categoryId: categoryId,
         categoryName: categoryName,
+        categoryIds: categoryIds,
+        categoryNames: categoryNames,
         tags: tags,
         isBookmarked: isBookmarked ?? this.isBookmarked,
       );
@@ -49,6 +60,8 @@ class Post {
         'publishedAt': publishedAt.toIso8601String(),
         'categoryId': categoryId,
         'categoryName': categoryName,
+        'categoryIds': categoryIds,
+        'categoryNames': categoryNames,
         'tags': tags,
       };
 
@@ -62,6 +75,8 @@ class Post {
         publishedAt: DateTime.parse(map['publishedAt'] as String),
         categoryId: map['categoryId'] as String,
         categoryName: map['categoryName'] as String,
+        categoryIds: (map['categoryIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
+        categoryNames: (map['categoryNames'] as List?)?.map((e) => e.toString()).toList() ?? [],
         tags: (map['tags'] as List?)?.map((e) => e.toString()).toList() ?? [],
       );
 }

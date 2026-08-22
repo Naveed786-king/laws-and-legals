@@ -28,7 +28,7 @@ export async function render(outlet, toast) {
             <tr>
               <td><img class="thumb" src="${p.imageUrl || ''}" onerror="this.style.visibility='hidden'"/></td>
               <td>${escapeHtml(p.title)}</td>
-              <td>${escapeHtml(p.categoryName || '')}</td>
+              <td>${escapeHtml((p.categoryNames && p.categoryNames.length > 0) ? p.categoryNames.join(', ') : (p.categoryName || ''))}</td>
               <td><span class="status-pill status-${p.status || 'draft'}">${p.status || 'draft'}</span></td>
               <td>
                 <button class="btn-secondary edit-btn" data-id="${p.id}">Edit</button>
@@ -82,10 +82,17 @@ export async function render(outlet, toast) {
       <div id="content-editor-mount"></div>
       <label class="field-label" style="margin-top:16px;">Author</label>
       <input id="f-author" value="${post ? escapeHtml(post.author) : ""}" />
-      <label class="field-label">Category</label>
-      <select id="f-category">
-        ${categories.map((c) => `<option value="${c.id}" ${post && post.categoryId === c.id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}
-      </select>
+      <label class="field-label">Categories (select one or more)</label>
+      <div id="f-categories-checkboxes" style="margin-bottom:12px;">
+        ${categories.map((c) => `
+          <label style="display:block;font-weight:normal;margin-bottom:4px;">
+            <input type="checkbox" class="f-category-checkbox" value="${c.id}" data-name="${escapeHtml(c.name)}"
+              style="width:auto;display:inline;margin-right:6px;"
+              ${post && (post.categoryIds || [post.categoryId]).includes(c.id) ? "checked" : ""} />
+            ${escapeHtml(c.name)}
+          </label>
+        `).join("")}
+      </div>
       <label class="field-label">Status</label>
       <select id="f-status">
         <option value="published" ${post && post.status === "published" ? "selected" : ""}>Published</option>
@@ -111,8 +118,15 @@ export async function render(outlet, toast) {
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
       try {
-        const categoryId = document.getElementById("f-category").value;
-        const category = categories.find((c) => c.id === categoryId);
+        const checkedBoxes = Array.from(document.querySelectorAll(".f-category-checkbox:checked"));
+        if (checkedBoxes.length === 0) {
+          alert("Please select at least one category.");
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save";
+          return;
+        }
+        const categoryIds = checkedBoxes.map((cb) => cb.value);
+        const categoryNames = checkedBoxes.map((cb) => cb.dataset.name);
         const imageUrl = document.getElementById("f-image-url").value.trim();
 
         const payload = {
@@ -121,8 +135,10 @@ export async function render(outlet, toast) {
           content: editor.toHtml(),
           blocks: editor.toBlocks(),
           author: document.getElementById("f-author").value.trim(),
-          categoryId,
-          categoryName: category ? category.name : "",
+          categoryId: categoryIds[0],
+          categoryName: categoryNames[0],
+          categoryIds,
+          categoryNames,
           status: document.getElementById("f-status").value,
           imageUrl: imageUrl || "",
           updatedAt: serverTimestamp(),
